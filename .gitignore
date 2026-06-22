@@ -10,4 +10,4 @@ logs/*.err.log
 .env.local
 dist/
 build/
-
+docs/
