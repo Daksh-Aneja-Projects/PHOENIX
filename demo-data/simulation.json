@@ -1,0 +1,99 @@
+{
+  "strategies": [
+    {
+      "id": "merge_now",
+      "name": "Merge Now",
+      "risk_score": 84,
+      "confidence": 0.72,
+      "incident_probability": 0.31,
+      "deployment_success_probability": 0.68,
+      "security_exposure": 87,
+      "delivery_delay_days": 0,
+      "timeline": [
+        {"day": 0, "risk": 42, "label": "green pipeline"},
+        {"day": 1, "risk": 61, "label": "contract uncertainty"},
+        {"day": 7, "risk": 84, "label": "mobile SSO failures emerge"},
+        {"day": 30, "risk": 91, "label": "enterprise launch exposed"}
+      ]
+    },
+    {
+      "id": "canary",
+      "name": "Canary",
+      "risk_score": 38,
+      "confidence": 0.86,
+      "incident_probability": 0.07,
+      "deployment_success_probability": 0.91,
+      "security_exposure": 39,
+      "delivery_delay_days": 1.5,
+      "timeline": [
+        {"day": 0, "risk": 42, "label": "green pipeline"},
+        {"day": 1, "risk": 47, "label": "limited exposure"},
+        {"day": 7, "risk": 34, "label": "validated rollout"},
+        {"day": 30, "risk": 24, "label": "objective stabilized"}
+      ]
+    },
+    {
+      "id": "contract_tests",
+      "name": "Add Contract Tests",
+      "risk_score": 31,
+      "confidence": 0.82,
+      "incident_probability": 0.09,
+      "deployment_success_probability": 0.89,
+      "security_exposure": 41,
+      "delivery_delay_days": 2,
+      "timeline": [
+        {"day": 0, "risk": 42, "label": "green pipeline"},
+        {"day": 1, "risk": 36, "label": "validation added"},
+        {"day": 7, "risk": 29, "label": "compatibility proven"},
+        {"day": 30, "risk": 25, "label": "stable launch"}
+      ]
+    },
+    {
+      "id": "split_mr",
+      "name": "Split MR",
+      "risk_score": 44,
+      "confidence": 0.79,
+      "incident_probability": 0.12,
+      "deployment_success_probability": 0.84,
+      "security_exposure": 45,
+      "delivery_delay_days": 4,
+      "timeline": [
+        {"day": 0, "risk": 42, "label": "green pipeline"},
+        {"day": 1, "risk": 39, "label": "blast radius reduced"},
+        {"day": 7, "risk": 41, "label": "review queue load"},
+        {"day": 30, "risk": 47, "label": "roadmap delay"}
+      ]
+    }
+  ],
+  "clusters": [
+    {"name": "Winning Futures", "count": 124, "risk": 22, "color": "emerald"},
+    {"name": "Stable Futures", "count": 91, "risk": 38, "color": "cyan"},
+    {"name": "Risk Futures", "count": 57, "risk": 63, "color": "amber"},
+    {"name": "Failure Futures", "count": 23, "risk": 82, "color": "red"},
+    {"name": "Black Swan Futures", "count": 5, "risk": 98, "color": "rose"}
+  ],
+  "black_swan": {
+    "probability": 0.048,
+    "impact": "critical",
+    "title": "Enterprise SSO login failures after rollout",
+    "trigger": "stale mobile clients + session validation change + JWT dependency drift",
+    "causal_chain": [
+      "MR #4821 updates session validation",
+      "identity-service accepts stricter token claims",
+      "mobile-api still serves stale client refresh flow",
+      "JWT stale version mishandles enterprise SSO edge case",
+      "Enterprise SSO launch experiences login failures"
+    ],
+    "orbit_evidence": ["Merge Request", "Pipeline gap", "Vulnerability", "Incident history", "Work Item", "Objective"]
+  },
+  "recommendation": {
+    "strategy": "Canary + Contract Validation + Security Review",
+    "confidence": 0.86,
+    "before_incident_probability": 0.31,
+    "after_incident_probability": 0.07,
+    "before_black_swan_impact": "critical",
+    "after_black_swan_impact": "contained",
+    "delivery_delay_days": 1.5
+  }
+}
+

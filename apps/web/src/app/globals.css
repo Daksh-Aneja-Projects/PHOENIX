@@ -1,0 +1,83 @@
+@import "@xyflow/react/dist/style.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 220 26% 6%;
+  --foreground: 210 40% 98%;
+  --card: 221 24% 10%;
+  --border: 214 26% 18%;
+  --muted: 217 20% 15%;
+  --muted-foreground: 215 16% 66%;
+  --primary: 187 94% 43%;
+  --destructive: 348 96% 71%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: hsl(var(--background));
+}
+
+body {
+  min-height: 100vh;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(circle at 18% 12%, rgba(34, 211, 238, 0.12), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(167, 139, 250, 0.12), transparent 28%),
+    linear-gradient(135deg, #061018 0%, #0c111c 44%, #130d18 100%);
+}
+
+.react-flow__node {
+  border: 0;
+  background: transparent;
+}
+
+.react-flow__handle {
+  opacity: 0;
+}
+
+.react-flow__edge-path {
+  stroke: rgba(148, 163, 184, 0.42);
+  stroke-width: 1.7;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke: #22d3ee;
+  stroke-dasharray: 8;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, 0.7));
+}
+
+.react-flow__edge.risk-edge .react-flow__edge-path {
+  filter: drop-shadow(0 0 14px rgba(251, 113, 133, 0.9));
+}
+
+.react-flow__edge.mitigated-edge .react-flow__edge-path {
+  stroke-dasharray: 4;
+  filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.85));
+  animation: risk-collapse 1.8s ease-out both;
+}
+
+@keyframes risk-collapse {
+  0% {
+    stroke-width: 5;
+    opacity: 1;
+  }
+  65% {
+    stroke-width: 2;
+    opacity: 0.55;
+  }
+  100% {
+    stroke-width: 2;
+    opacity: 0.85;
+  }
+}
+
+.radar-ring {
+  background:
+    radial-gradient(circle, transparent 0 22%, rgba(148, 163, 184, 0.18) 22.5% 23%, transparent 23.5% 45%, rgba(148, 163, 184, 0.16) 45.5% 46%, transparent 46.5% 68%, rgba(148, 163, 184, 0.14) 68.5% 69%, transparent 69.5%),
+    conic-gradient(from 0deg, rgba(34, 211, 238, 0.3), rgba(251, 113, 133, 0.24), rgba(52, 211, 153, 0.24), rgba(34, 211, 238, 0.3));
+}

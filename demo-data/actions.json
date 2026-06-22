@@ -1,0 +1,37 @@
+[
+  {
+    "id": "act-security-review",
+    "type": "request_review",
+    "title": "Requested Security review from Priya Shah",
+    "target": "MR #4821",
+    "orbit_basis": ["VULN-JWT-19", "team-security", "MR #4821"]
+  },
+  {
+    "id": "act-contract-validation",
+    "type": "trigger_pipeline",
+    "title": "Triggered mobile contract validation",
+    "target": "mobile-contract-tests",
+    "orbit_basis": ["mobile-api", "pipeline gap", "WI-1042"]
+  },
+  {
+    "id": "act-jwt-work-item",
+    "type": "create_work_item",
+    "title": "Created work item: Patch JWT dependency",
+    "target": "WI-1088",
+    "orbit_basis": ["VULN-JWT-19", "identity-service"]
+  },
+  {
+    "id": "act-mr-comment",
+    "type": "post_mr_comment",
+    "title": "Posted MR comment with causal chain",
+    "target": "MR #4821",
+    "orbit_basis": ["incident-session", "enterprise-sso", "simulation"]
+  },
+  {
+    "id": "act-canary-gate",
+    "type": "add_rollout_gate",
+    "title": "Added canary rollout gate",
+    "target": "production deployment",
+    "orbit_basis": ["deployments", "checkout-api", "enterprise-sso"]
+  }
+]

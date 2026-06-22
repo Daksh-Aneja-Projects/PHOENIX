@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {"id": "mr-4821", "label": "MR #4821", "type": "merge_request", "risk": 42, "orbit": "Merge Request"},
+    {"id": "identity-service", "label": "identity-service", "type": "service", "risk": 78, "orbit": "Repository + Ownership"},
+    {"id": "checkout-api", "label": "checkout-api", "type": "service", "risk": 66, "orbit": "Repository + Incident"},
+    {"id": "mobile-api", "label": "mobile-api", "type": "service", "risk": 74, "orbit": "Pipeline + Work Item"},
+    {"id": "payments-gateway", "label": "payments-gateway", "type": "service", "risk": 58, "orbit": "Deployment"},
+    {"id": "enterprise-sso", "label": "enterprise-sso", "type": "objective", "risk": 82, "orbit": "Objective + Work Item"},
+    {"id": "team-identity", "label": "Identity Team", "type": "team", "risk": 61, "orbit": "Team"},
+    {"id": "team-security", "label": "Security Team", "type": "team", "risk": 69, "orbit": "Reviewer Ownership"},
+    {"id": "vuln-jwt", "label": "JWT stale version", "type": "vulnerability", "risk": 86, "orbit": "Vulnerability"},
+    {"id": "incident-session", "label": "May session outage", "type": "incident", "risk": 73, "orbit": "Incident"}
+  ],
+  "edges": [
+    {"id": "e1", "source": "mr-4821", "target": "identity-service", "relationship": "AFFECTS", "weight": 0.96},
+    {"id": "e2", "source": "identity-service", "target": "checkout-api", "relationship": "DEPENDS_ON", "weight": 0.71},
+    {"id": "e3", "source": "identity-service", "target": "mobile-api", "relationship": "TRIGGERS", "weight": 0.84},
+    {"id": "e4", "source": "checkout-api", "target": "payments-gateway", "relationship": "AFFECTS", "weight": 0.62},
+    {"id": "e5", "source": "mobile-api", "target": "enterprise-sso", "relationship": "BLOCKS", "weight": 0.88},
+    {"id": "e6", "source": "team-identity", "target": "identity-service", "relationship": "OWNS", "weight": 1},
+    {"id": "e7", "source": "team-security", "target": "vuln-jwt", "relationship": "PROTECTS", "weight": 1},
+    {"id": "e8", "source": "vuln-jwt", "target": "identity-service", "relationship": "INTRODUCES", "weight": 0.79},
+    {"id": "e9", "source": "incident-session", "target": "identity-service", "relationship": "AFFECTS", "weight": 0.67}
+  ],
+  "propagation_path": ["mr-4821", "identity-service", "mobile-api", "enterprise-sso"],
+  "blast_radius_score": 82
+}
+

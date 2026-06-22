@@ -1,0 +1,10 @@
+{
+  "name": "project-phoenix",
+  "private": true,
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "test:api": "cd apps/api && D:\\Phoenix\\.venv\\Scripts\\python.exe -m pytest"
+  }
+}
