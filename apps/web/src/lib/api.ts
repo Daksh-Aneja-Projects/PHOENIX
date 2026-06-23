@@ -1,4 +1,4 @@
-import type { AuditLog, Scenario, SimulationResult, Twin } from "@/lib/types";
+import type { AuditLog, Scenario, SimulationResult, Twin, OrbitExplainability } from "@/lib/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -35,5 +35,9 @@ export function mitigate(scenarioId: string = "scenario_01") {
     method: "POST",
     body: JSON.stringify({ mr_id: "4821" })
   });
+}
+
+export function getExplainability(scenarioId: string = "scenario_01") {
+  return request<OrbitExplainability>(`/context/${scenarioId}/explain`);
 }
 

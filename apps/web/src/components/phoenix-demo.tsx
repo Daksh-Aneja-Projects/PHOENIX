@@ -4,14 +4,16 @@ import { Activity, AlertTriangle, GitMerge, Radar, ShieldCheck, Sparkles, Zap } 
 import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getScenario, getTwin, mitigate, runSimulation } from "@/lib/api";
+import { getScenario, getTwin, mitigate, runSimulation, getExplainability } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { EnterpriseTwinView } from "@/components/enterprise-twin-view";
+import { EnterpriseMemoryPanel } from "@/components/enterprise-memory-panel";
 import { FutureTimeline } from "@/components/future-timeline";
 import { BlackSwanRadar } from "@/components/black-swan-radar";
 import { OrbitMoment } from "@/components/orbit-moment";
+import { BrainCircuit } from "lucide-react";
 
 const phases = ["Standby", "Orbit Ingested", "Twin Propagating", "Futures Simulated", "Black Swan Found", "Mitigated"];
 
@@ -28,6 +30,7 @@ export function PhoenixDemo() {
   }, []);
 
   const scenario = useQuery({ queryKey: ["scenario", scenarioId], queryFn: () => getScenario(scenarioId) });
+  const explain = useQuery({ queryKey: ["explain", scenarioId], queryFn: () => getExplainability(scenarioId), enabled: phase >= 1 });
   const twin = useQuery({ queryKey: ["twin", scenarioId], queryFn: () => getTwin(scenarioId), enabled: phase >= 1 });
   const simulation = useMutation({ mutationFn: () => runSimulation(scenarioId) });
   const agents = useMutation({ mutationFn: () => mitigate(scenarioId) });
@@ -170,6 +173,21 @@ export function PhoenixDemo() {
               )}
             </AnimatePresence>
 
+            <AnimatePresence>
+              {phase >= 3 && orbitMomentComplete && !simulation.isPending && (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="rounded-md border border-rose-300/50 bg-rose-400/20 p-4 shadow-lg shadow-rose-500/20">
+                  <div className="flex items-center gap-2 text-rose-100 font-semibold mb-2">
+                     <BrainCircuit className="h-5 w-5" />
+                     Memory Triggered
+                  </div>
+                  <p className="text-sm text-white">This change resembles a deployment pattern associated with the {scenario.data?.orbit_context.incidents?.[0]?.title ?? "Session Invalidation Outage"}.</p>
+                  <div className="mt-3 text-[10px] text-rose-200 flex items-center gap-1.5 font-mono uppercase">
+                     Incident <GitMerge className="h-3 w-3" /> Dependency <GitMerge className="h-3 w-3" /> Ownership <GitMerge className="h-3 w-3" /> Black Swan
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {phase >= 4 && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-rose-300/25 bg-rose-400/10 p-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-rose-100">
@@ -183,7 +201,10 @@ export function PhoenixDemo() {
 
           <div className="grid gap-4 xl:grid-cols-2">
             <EnterpriseTwinView twin={twin.data} active={phase >= 2} mitigated={phase >= 5} />
-            <FutureTimeline simulation={simulation.data} active={phase >= 3} mitigated={phase >= 5} />
+            <EnterpriseMemoryPanel explain={explain.data} />
+            <div className="xl:col-span-2">
+              <FutureTimeline simulation={simulation.data} active={phase >= 3} mitigated={phase >= 5} />
+            </div>
             <div className="xl:col-span-2">
               <BlackSwanRadar simulation={simulation.data} audit={agents.data} active={phase >= 4} mitigated={phase >= 5} />
             </div>

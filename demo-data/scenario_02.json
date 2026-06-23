@@ -1,42 +1,32 @@
 {
+  "id": "scenario_02",
+  "name": "Small Startup",
   "merge_request": {
-    "id": "5102",
-    "iid": 5102,
-    "title": "Upgrade Stripe integration to v2026-04",
-    "author": "David Kim",
-    "branch": "feature/stripe-v2026",
-    "files_changed": 14,
+    "id": "4821",
+    "iid": 4821,
+    "title": "Update session validation for enterprise SSO",
+    "author": "Maya Chen",
+    "branch": "feature/sso-session-validation",
+    "files_changed": 7,
     "pipeline_status": "passing",
     "review_status": "approved",
-    "orbit_source": "synthetic GitLab Orbit context"
+    "orbit_source": "GitLab Orbit"
   },
   "orbit_context": {
-    "teams": ["Payments", "Checkout", "Finance", "Security"],
+    "teams": ["Engineering"],
     "ownership": [
-      {"team": "Payments", "owns": "payments-gateway"},
-      {"team": "Checkout", "owns": "checkout-api"},
-      {"team": "Finance", "owns": "ledger-service"},
-      {"team": "Security", "owns": "fraud-detection"}
+      {"team": "Engineering", "owns": "monolith-api"}
     ],
     "pipelines": [
-      {"name": "unit-tests", "status": "passing", "coverage": 95},
-      {"name": "integration-tests", "status": "passing", "coverage": 88},
-      {"name": "e2e-payments", "status": "failed", "coverage": 0}
+      {"name": "test-suite", "status": "passing", "coverage": 85}
     ],
-    "vulnerabilities": [
-      {"id": "VULN-PMT-02", "title": "Missing rate limit on webhook", "severity": "medium", "service": "payments-gateway"}
-    ],
-    "incidents": [
-      {"id": "INC-2025-1102", "title": "Black Friday gateway timeout", "severity": "sev1", "related_service": "payments-gateway"},
-      {"id": "INC-2026-0211", "title": "Ledger desync", "severity": "sev2", "related_service": "ledger-service"}
-    ],
+    "vulnerabilities": [],
+    "incidents": [],
     "work_items": [
-      {"id": "WI-2041", "title": "Stripe API Upgrade", "status": "in-progress", "objective": "Support international payments"},
-      {"id": "WI-2100", "title": "Fix E2E payment flakiness", "status": "open", "objective": "Improve release velocity"}
+      {"id": "WI-102", "title": "Add SAML Support", "status": "in-progress", "objective": "Land first enterprise customer"}
     ],
     "objectives": [
-      {"id": "OBJ-Q3-INTL", "title": "Launch in EU market", "health": "amber", "risk_after_mr": "red"},
-      {"id": "OBJ-REV-STABLE", "title": "Maintain 99.99% checkout uptime", "health": "green", "risk_after_mr": "red"}
+      {"id": "OBJ-1", "title": "Land first enterprise customer", "health": "green", "risk_after_mr": "green"}
     ]
   }
 }

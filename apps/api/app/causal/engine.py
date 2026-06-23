@@ -1,62 +1,80 @@
-from app.models import Scenario, Twin, BlackSwan
+from app.models import BlackSwan, OrbitContext
+from app.memory.engine import MemoryEngine
 
-class CausalEngine:
-    def explain_black_swan(self, scenario: Scenario, twin: Twin) -> BlackSwan:
-        vulns = scenario.orbit_context.vulnerabilities
-        incs = scenario.orbit_context.incidents
-        
-        # Build causal chain
-        chain = [
-            f"MR #{scenario.merge_request.iid} modifies code",
-        ]
-        
-        trigger = "Unforeseen interactions"
-        impact = "moderate"
-        prob = 0.02
-        evidence = ["Merge Request"]
-        title = "Unexpected system behavior"
-        
-        if vulns:
-            v = vulns[0]
-            chain.append(f"{v['service']} inherits {v['title']}")
-            trigger = f"Exploitation of {v['title']}"
-            prob += 0.05
-            impact = "high"
-            evidence.append("Vulnerability")
-            title = f"{v['service']} compromise via {v['title']}"
-            
-        if incs:
-            i = incs[0]
-            chain.append(f"Similar conditions to {i['title']} emerge")
-            trigger += f" + {i['title']} recurrence"
-            prob += 0.03
-            impact = "critical"
-            evidence.append("Incident history")
-            title = f"Cascading failure mirroring {i['title']}"
-            
-        if scenario.orbit_context.objectives:
-            obj = scenario.orbit_context.objectives[0]
-            chain.append(f"Objective '{obj['title']}' fails")
-            evidence.append("Objective")
-            
-        return BlackSwan(
-            probability=min(prob, 0.99),
-            impact=impact,
-            title=title,
-            trigger=trigger,
-            causal_chain=chain,
-            orbit_evidence=evidence
-        )
+class BlackSwanEngine:
+    def __init__(self):
+        self.memory_engine = MemoryEngine()
 
-    def explain_recommendation(self, scenario: Scenario) -> dict:
-        # returns text explanations to be used by SimulationEngine
-        reasoning = []
-        if len(scenario.orbit_context.vulnerabilities) > 0:
-            reasoning.append("High vulnerability exposure detected.")
-        if len(scenario.orbit_context.incidents) > 0:
-            reasoning.append("Historical incident correlation found.")
-            
-        return {
-            "confidence": 0.85 if not reasoning else 0.72,
-            "reasoning": reasoning
-        }
+    def discover(self, orbit: OrbitContext) -> BlackSwan:
+        memories = self.memory_engine.extract_memories(orbit)
+        
+        has_incidents = any(m.type == "incident" for m in memories)
+        has_vulns = any(m.type == "dependency" for m in memories)
+        has_complex_ownership = len([m for m in memories if m.type == "ownership"]) > 2
+
+        if has_incidents and has_vulns and has_complex_ownership:
+            # Complex Enterprise scenario
+            return BlackSwan(
+                probability=0.08,
+                impact="critical",
+                title="Cascading failure mirroring May 14 Session Outage",
+                trigger="Exploitation of JWT drift combined with overload from mobile clients",
+                causal_chain=[
+                    "MR #4821 merges bypassing security checks",
+                    "Identity Service deploys updated validation",
+                    "Mobile API instances trigger full re-authentication",
+                    "JWT Vulnerability is exposed to unthrottled traffic",
+                    "Enterprise SSO Launch blocked by outage",
+                    "Critical Customer Impact"
+                ],
+                orbit_evidence=[
+                    "Merge Request + Pipeline",
+                    "Team Ownership Memory",
+                    "Dependency Memory",
+                    "Vulnerability Memory",
+                    "Objective Memory",
+                    "Historical Incident Memory"
+                ]
+            )
+        elif has_incidents and not has_vulns:
+            # Midsize scenario
+            return BlackSwan(
+                probability=0.04,
+                impact="high",
+                title="Auth timeout during initial traffic spike",
+                trigger="Missing rate limit on login endpoint is overwhelmed",
+                causal_chain=[
+                    "MR #4821 lands in Auth Service",
+                    "Frontend e2e tests were ignored",
+                    "Self-serve SSO launch drives 3x traffic",
+                    "Database connection pool exhausted",
+                    "Auth timeout mimics Aug 10 incident"
+                ],
+                orbit_evidence=[
+                    "Merge Request",
+                    "Failed Pipeline Memory",
+                    "Work Item Memory",
+                    "Service Memory",
+                    "Historical Incident Memory"
+                ]
+            )
+        else:
+            # Small scenario
+            return BlackSwan(
+                probability=0.01,
+                impact="low",
+                title="Minor rollback due to unhandled edge case",
+                trigger="Unexpected payload format from legacy client",
+                causal_chain=[
+                    "MR #4821 deployed to monolith",
+                    "Legacy client sends malformed session token",
+                    "Monolith returns 500",
+                    "Quick rollback initiated"
+                ],
+                orbit_evidence=[
+                    "Merge Request",
+                    "Ownership Memory",
+                    "Service Memory",
+                    "Pipeline Memory"
+                ]
+            )

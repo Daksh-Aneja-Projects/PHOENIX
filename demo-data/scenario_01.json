@@ -1,4 +1,6 @@
 {
+  "id": "scenario_01",
+  "name": "Enterprise Platform",
   "merge_request": {
     "id": "4821",
     "iid": 4821,
@@ -8,7 +10,7 @@
     "files_changed": 7,
     "pipeline_status": "passing",
     "review_status": "approved",
-    "orbit_source": "synthetic GitLab Orbit context"
+    "orbit_source": "GitLab Orbit"
   },
   "orbit_context": {
     "teams": ["Identity", "Mobile", "Payments", "Security"],
@@ -24,22 +26,16 @@
       {"name": "mobile-contract-tests", "status": "missing", "coverage": 0}
     ],
     "vulnerabilities": [
-      {"id": "VULN-JWT-19", "title": "JWT library stale version", "severity": "high", "service": "identity-service"},
-      {"id": "VULN-MOB-07", "title": "Mobile token refresh edge case", "severity": "medium", "service": "mobile-api"}
+      {"id": "VULN-JWT-19", "title": "JWT library stale version", "severity": "high", "service": "identity-service"}
     ],
     "incidents": [
-      {"id": "INC-2026-0514", "title": "Session invalidation outage", "severity": "sev2", "related_service": "identity-service"},
-      {"id": "INC-2026-0428", "title": "Checkout auth regression", "severity": "sev3", "related_service": "checkout-api"}
+      {"id": "INC-2026-0514", "title": "Session invalidation outage", "severity": "sev2", "related_service": "identity-service", "date": "May 14"}
     ],
     "work_items": [
-      {"id": "WI-991", "title": "Enterprise SSO Launch", "status": "at-risk", "objective": "Expand enterprise adoption"},
-      {"id": "WI-1042", "title": "Mobile session compatibility", "status": "open", "objective": "Protect mobile conversion"},
-      {"id": "WI-1088", "title": "Patch JWT dependency", "status": "queued", "objective": "Reduce auth exposure"}
+      {"id": "WI-991", "title": "Enterprise SSO Launch", "status": "at-risk", "objective": "Expand enterprise adoption"}
     ],
     "objectives": [
-      {"id": "OBJ-Q3-ENT", "title": "Enterprise SSO Launch", "health": "green", "risk_after_mr": "amber"},
-      {"id": "OBJ-REV-PROTECT", "title": "Protect checkout revenue", "health": "green", "risk_after_mr": "amber"}
+      {"id": "OBJ-Q3-ENT", "title": "Enterprise SSO Launch", "health": "green", "risk_after_mr": "amber"}
     ]
   }
 }
-

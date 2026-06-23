@@ -26,6 +26,8 @@ class OrbitContext(BaseModel):
 
 
 class Scenario(BaseModel):
+    id: str
+    name: str
     merge_request: MergeRequest
     orbit_context: OrbitContext
 
@@ -97,12 +99,40 @@ class Recommendation(BaseModel):
     delivery_delay_days: float
 
 
+class Decision(BaseModel):
+    strategy: str
+    confidence: float
+    expected_impact: str
+    supporting_evidence: list[str]
+    rejected_alternatives: list[dict[str, str]]
+
+
 class SimulationResult(BaseModel):
     simulation_count: int
     strategies: list[FutureStrategy]
     clusters: list[OutcomeCluster]
     black_swan: BlackSwan
     recommendation: Recommendation
+    decision: Decision
+
+
+class MemoryObject(BaseModel):
+    id: str
+    type: Literal["incident", "ownership", "dependency", "deployment", "objective", "work_item"]
+    title: str
+    relevance_score: float
+    orbit_signals: list[str]
+    description: str
+
+
+class OrbitExplainability(BaseModel):
+    signals_used: list[str]
+    incident_memory: list[MemoryObject]
+    ownership_memory: list[MemoryObject]
+    deployment_memory: list[MemoryObject]
+    dependency_memory: list[MemoryObject]
+    objective_memory: list[MemoryObject]
+    readiness_score: int
 
 
 class MitigationRequest(BaseModel):

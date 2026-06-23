@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.models import AuditLog, MitigationRequest, Scenario, SimulationResult, Twin
+from app.models import AuditLog, MitigationRequest, Scenario, SimulationResult, Twin, OrbitContext, OrbitExplainability
 from app.repositories import JsonFixtureRepository
-from app.services import AgentService, ScenarioService, SimulationService, TwinService
+from app.services import AgentService, ScenarioService, SimulationService, TwinService, MemoryService
 
 router = APIRouter()
 repository = JsonFixtureRepository()
@@ -10,6 +10,17 @@ scenario_service = ScenarioService(repository)
 twin_service = TwinService(repository)
 simulation_service = SimulationService(repository)
 agent_service = AgentService(repository)
+memory_service = MemoryService(repository)
+
+
+@router.post("/ingest")
+async def ingest(orbit: OrbitContext) -> dict[str, int]:
+    return await memory_service.ingest(orbit)
+
+
+@router.get("/context/{scenario_id}/explain", response_model=OrbitExplainability)
+async def explain(scenario_id: str) -> OrbitExplainability:
+    return await memory_service.explain(scenario_id)
 
 
 @router.get("/scenario", response_model=Scenario)

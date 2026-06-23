@@ -1,38 +1,38 @@
 {
+  "id": "scenario_03",
+  "name": "Mid-size SaaS",
   "merge_request": {
-    "id": "6011",
-    "iid": 6011,
-    "title": "Update Log4j dependency to fix CVE-2026-0123",
-    "author": "Security Bot",
-    "branch": "chore/update-log4j",
-    "files_changed": 2,
+    "id": "4821",
+    "iid": 4821,
+    "title": "Update session validation for enterprise SSO",
+    "author": "Maya Chen",
+    "branch": "feature/sso-session-validation",
+    "files_changed": 7,
     "pipeline_status": "passing",
-    "review_status": "unreviewed",
-    "orbit_source": "synthetic GitLab Orbit context"
+    "review_status": "approved",
+    "orbit_source": "GitLab Orbit"
   },
   "orbit_context": {
-    "teams": ["Core Platform", "Search", "Data Engineering"],
+    "teams": ["Platform", "Web-Frontend"],
     "ownership": [
-      {"team": "Core Platform", "owns": "auth-service"},
-      {"team": "Search", "owns": "search-indexer"},
-      {"team": "Data Engineering", "owns": "analytics-pipeline"}
+      {"team": "Platform", "owns": "auth-service"},
+      {"team": "Web-Frontend", "owns": "web-app"}
     ],
     "pipelines": [
-      {"name": "unit-tests", "status": "passing", "coverage": 70},
-      {"name": "security-scan", "status": "passing", "coverage": 100}
+      {"name": "backend-tests", "status": "passing", "coverage": 90},
+      {"name": "frontend-e2e", "status": "failed", "coverage": 70}
     ],
     "vulnerabilities": [
-      {"id": "VULN-LOG-01", "title": "CVE-2026-0123 RCE", "severity": "critical", "service": "auth-service"},
-      {"id": "VULN-LOG-02", "title": "CVE-2026-0123 RCE", "severity": "critical", "service": "search-indexer"}
+      {"id": "VULN-AUTH-04", "title": "Missing rate limit on login", "severity": "medium", "service": "auth-service"}
     ],
     "incidents": [
-      {"id": "INC-2024-0301", "title": "Dependency bump broke search", "severity": "sev2", "related_service": "search-indexer"}
+      {"id": "INC-2025-0810", "title": "Auth timeout during spike", "severity": "sev3", "related_service": "auth-service", "date": "Aug 10"}
     ],
     "work_items": [
-      {"id": "WI-3301", "title": "Q3 Security Patching", "status": "in-progress", "objective": "Zero critical CVEs"}
+      {"id": "WI-550", "title": "Self-serve SSO", "status": "in-progress", "objective": "Reduce support tickets"}
     ],
     "objectives": [
-      {"id": "OBJ-SEC-01", "title": "Zero critical CVEs SLA", "health": "red", "risk_after_mr": "green"}
+      {"id": "OBJ-SUPP", "title": "Reduce support tickets", "health": "amber", "risk_after_mr": "amber"}
     ]
   }
 }

@@ -61,6 +61,32 @@ export type SimulationResult = {
     after_black_swan_impact: string;
     delivery_delay_days: number;
   };
+  decision: {
+    strategy: string;
+    confidence: number;
+    expected_impact: string;
+    supporting_evidence: string[];
+    rejected_alternatives: Array<{ strategy: string; reason: string }>;
+  };
+};
+
+export type MemoryObject = {
+  id: string;
+  type: "incident" | "ownership" | "dependency" | "deployment" | "objective" | "work_item";
+  title: string;
+  relevance_score: number;
+  orbit_signals: string[];
+  description: string;
+};
+
+export type OrbitExplainability = {
+  signals_used: string[];
+  incident_memory: MemoryObject[];
+  ownership_memory: MemoryObject[];
+  deployment_memory: MemoryObject[];
+  dependency_memory: MemoryObject[];
+  objective_memory: MemoryObject[];
+  readiness_score: number;
 };
 
 export type AuditLog = {

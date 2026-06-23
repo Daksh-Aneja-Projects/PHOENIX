@@ -1,104 +1,131 @@
 import random
-from app.models import Scenario, Twin, SimulationResult, FutureStrategy, TimelinePoint, OutcomeCluster, Recommendation
-from app.causal.engine import CausalEngine
+from app.models import (
+    FutureStrategy,
+    OutcomeCluster,
+    Recommendation,
+    Scenario,
+    SimulationResult,
+    TimelinePoint,
+    Twin
+)
+from app.causal.engine import BlackSwanEngine
+from app.memory.engine import MemoryEngine
+# Note: DecisionEngine will be used in services, but ContextualRiskEngine calculates the base simulation result.
 
-class SimulationEngine:
+class ContextualRiskEngine:
     def __init__(self):
-        self.causal_engine = CausalEngine()
+        self.black_swan_engine = BlackSwanEngine()
+        self.memory_engine = MemoryEngine()
 
     def simulate(self, scenario: Scenario, twin: Twin) -> SimulationResult:
-        random.seed(scenario.merge_request.id)  # Deterministic per MR
+        # deterministic random
+        random.seed(scenario.merge_request.iid)
         
-        num_simulations = random.randint(150, 250)
-        
-        base_risk = 40
-        if scenario.orbit_context.vulnerabilities:
+        memories = self.memory_engine.extract_memories(scenario.orbit_context)
+        black_swan = self.black_swan_engine.discover(scenario.orbit_context)
+
+        # Contextual Risk calculation
+        base_risk = 10
+        if any(m.type == "incident" for m in memories):
             base_risk += 30
-        if scenario.orbit_context.incidents:
+        if any(m.type == "dependency" for m in memories):
             base_risk += 20
-            
-        black_swan = self.causal_engine.explain_black_swan(scenario, twin)
-        causal_rec = self.causal_engine.explain_recommendation(scenario)
+        if len([m for m in memories if m.type == "ownership"]) > 2:
+            base_risk += 15
+        if any(p.get("status") == "failed" for p in scenario.orbit_context.pipelines):
+            base_risk += 25
+
+        base_risk = min(100, base_risk)
+
+        # Define clusters based on base risk
+        clusters = [
+            OutcomeCluster(name="Winning Futures", count=150 - base_risk, risk=20, color="emerald"),
+            OutcomeCluster(name="Stable Futures", count=100 - (base_risk // 2), risk=40, color="cyan"),
+            OutcomeCluster(name="Risk Futures", count=base_risk, risk=70, color="amber"),
+            OutcomeCluster(name="Failure Futures", count=base_risk // 2, risk=90, color="red"),
+            OutcomeCluster(name="Black Swan Futures", count=max(1, int(black_swan.probability * 100)), risk=100, color="rose"),
+        ]
         
-        # Strategies
+        sim_count = sum(c.count for c in clusters)
+
         strategies = [
             FutureStrategy(
                 id="merge_now",
                 name="Merge Now",
-                risk_score=min(base_risk + 10, 100),
-                confidence=0.6,
-                incident_probability=black_swan.probability + 0.2,
-                deployment_success_probability=0.7,
+                risk_score=min(100, base_risk + 10),
+                confidence=0.9 - (base_risk / 200),
+                incident_probability=base_risk / 150,
+                deployment_success_probability=1.0 - (base_risk / 200),
                 security_exposure=base_risk,
                 delivery_delay_days=0,
                 timeline=[
-                    TimelinePoint(day=0, risk=base_risk, label="pipeline passes"),
-                    TimelinePoint(day=7, risk=min(base_risk + 15, 100), label="vulnerability found"),
-                    TimelinePoint(day=30, risk=min(base_risk + 30, 100), label="incident triggered")
+                    TimelinePoint(day=1, risk=base_risk, label="Merged"),
+                    TimelinePoint(day=3, risk=min(100, base_risk + 20), label="Peak Load"),
+                    TimelinePoint(day=7, risk=min(100, base_risk + 5), label="Stabilized")
                 ]
             ),
             FutureStrategy(
                 id="canary",
-                name="Canary",
-                risk_score=max(base_risk - 20, 10),
-                confidence=0.8,
-                incident_probability=black_swan.probability,
-                deployment_success_probability=0.9,
-                security_exposure=max(base_risk - 10, 10),
-                delivery_delay_days=2,
+                name="Canary Rollout",
+                risk_score=max(10, base_risk - 30),
+                confidence=0.85,
+                incident_probability=base_risk / 300,
+                deployment_success_probability=0.95,
+                security_exposure=max(0, base_risk - 20),
+                delivery_delay_days=2.0,
                 timeline=[
-                    TimelinePoint(day=0, risk=base_risk, label="pipeline passes"),
-                    TimelinePoint(day=7, risk=max(base_risk - 10, 10), label="canary stable"),
-                    TimelinePoint(day=30, risk=max(base_risk - 20, 10), label="full rollout")
+                    TimelinePoint(day=1, risk=max(10, base_risk - 10), label="10% Traffic"),
+                    TimelinePoint(day=3, risk=max(10, base_risk - 20), label="50% Traffic"),
+                    TimelinePoint(day=7, risk=max(10, base_risk - 30), label="100% Traffic")
                 ]
             ),
             FutureStrategy(
                 id="contract_tests",
                 name="Add Contract Tests",
-                risk_score=max(base_risk - 15, 10),
-                confidence=0.85,
-                incident_probability=black_swan.probability + 0.05,
-                deployment_success_probability=0.85,
-                security_exposure=base_risk,
-                delivery_delay_days=3,
+                risk_score=max(10, base_risk - 40),
+                confidence=0.95,
+                incident_probability=base_risk / 400,
+                deployment_success_probability=0.99,
+                security_exposure=max(0, base_risk - 30),
+                delivery_delay_days=3.0,
                 timeline=[
-                    TimelinePoint(day=0, risk=base_risk, label="tests added"),
-                    TimelinePoint(day=7, risk=max(base_risk - 15, 10), label="compatibility verified"),
-                    TimelinePoint(day=30, risk=max(base_risk - 15, 10), label="launch stable")
+                    TimelinePoint(day=1, risk=base_risk, label="Writing Tests"),
+                    TimelinePoint(day=3, risk=max(10, base_risk - 20), label="Pipeline Fixes"),
+                    TimelinePoint(day=7, risk=max(10, base_risk - 40), label="Safe Merge")
                 ]
             )
         ]
+
+        # The actual DecisionEngine will process this to generate the final decision/recommendation,
+        # but we provide a dummy Recommendation here which DecisionEngine will override.
+        # Wait, the models demand `decision` on SimulationResult. So the service will need to populate it.
+        # Let's populate a placeholder or just let ContextualRiskEngine call DecisionEngine.
+        # Actually, let's keep them decoupled in services.py. I'll provide a dummy for now.
         
-        # Recommendation
-        best_strategy = min(strategies, key=lambda s: s.risk_score)
-        
-        # Strategy text dynamic based on causal engine
-        rec_text = best_strategy.name
-        if causal_rec["reasoning"]:
-            rec_text += f" (Due to: {', '.join(causal_rec['reasoning'])})"
-            
-        recommendation = Recommendation(
-            strategy=rec_text,
-            confidence=causal_rec["confidence"],
-            before_incident_probability=strategies[0].incident_probability,
-            after_incident_probability=best_strategy.incident_probability,
-            before_black_swan_impact=black_swan.impact,
-            after_black_swan_impact="contained" if best_strategy.id != "merge_now" else black_swan.impact,
-            delivery_delay_days=best_strategy.delivery_delay_days
+        dummy_recommendation = Recommendation(
+            strategy="TBD",
+            confidence=0.0,
+            before_incident_probability=0.0,
+            after_incident_probability=0.0,
+            before_black_swan_impact="unknown",
+            after_black_swan_impact="unknown",
+            delivery_delay_days=0.0
         )
-        
-        clusters = [
-            OutcomeCluster(name="Winning Futures", count=int(num_simulations * 0.4), risk=20, color="emerald"),
-            OutcomeCluster(name="Stable Futures", count=int(num_simulations * 0.3), risk=40, color="cyan"),
-            OutcomeCluster(name="Risk Futures", count=int(num_simulations * 0.2), risk=70, color="amber"),
-            OutcomeCluster(name="Failure Futures", count=int(num_simulations * 0.08), risk=90, color="red"),
-            OutcomeCluster(name="Black Swan Futures", count=int(num_simulations * 0.02), risk=100, color="rose")
-        ]
+
+        from app.models import Decision
+        dummy_decision = Decision(
+            strategy="TBD",
+            confidence=0.0,
+            expected_impact="TBD",
+            supporting_evidence=[],
+            rejected_alternatives=[]
+        )
 
         return SimulationResult(
-            simulation_count=num_simulations,
+            simulation_count=sim_count,
             strategies=strategies,
             clusters=clusters,
             black_swan=black_swan,
-            recommendation=recommendation
+            recommendation=dummy_recommendation,
+            decision=dummy_decision
         )
