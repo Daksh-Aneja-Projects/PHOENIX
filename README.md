@@ -175,7 +175,7 @@ Signals derived from contributors, milestones, issues, pipelines, labels, and ow
 
 ## Demo Video
 
-[Watch the Phoenix Demo Video (Devpost)](#) *(Link to be updated upon submission)*
+[Watch the Phoenix Demo Video (Devpost)](https://youtu.be/24oK9s5mcKM?si=-613KZ4EE4neYvHt)
 
 ---
 
