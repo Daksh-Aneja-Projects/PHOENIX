@@ -1,94 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock3 } from "lucide-react";
-import { useState } from "react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Clock3, GitMerge, AlertCircle, ShieldCheck, Divide } from "lucide-react";
 import type { SimulationResult } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import { Panel } from "@/components/ui/panel";
-
-const dayLabels = [0, 1, 7, 30];
 
 export function FutureTimeline({ simulation, active, mitigated }: { simulation?: SimulationResult; active: boolean; mitigated: boolean }) {
-  const [dayIndex, setDayIndex] = useState(0);
-  const selectedDay = dayLabels[dayIndex];
-  const chartData =
-    simulation?.strategies[0].timeline.map((point, index) => ({
-      day: `+${point.day}`,
-      merge: simulation.strategies[0].timeline[index].risk,
-      canary: simulation.strategies[1].timeline[index].risk,
-      tests: simulation.strategies[2].timeline[index].risk,
-      split: simulation.strategies[3].timeline[index].risk
-    })) ?? [];
+  if (!simulation) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center opacity-30">
+        <Clock3 className="h-8 w-8 text-cyan-500 mb-4 animate-pulse" />
+        <p className="font-mono text-sm uppercase tracking-widest text-cyan-200">Awaiting Simulation</p>
+      </div>
+    );
+  }
 
-  const current = simulation?.strategies.map((strategy) => strategy.timeline.find((point) => point.day === selectedDay) ?? strategy.timeline[0]) ?? [];
+  const icons = [GitMerge, AlertCircle, ShieldCheck, Divide];
 
   return (
-    <Panel className="min-h-[500px]">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Clock3 className="h-4 w-4 text-cyan-300" />
-            <h2 className="font-semibold">Future Timeline</h2>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">Projected outcomes across delivery time.</p>
-        </div>
-        <Badge>{active ? "300 futures simulated" : "Awaiting simulation"}</Badge>
+    <div className="h-full flex flex-col p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock3 className="h-4 w-4 text-cyan-400" />
+        <h2 className="font-semibold text-sm uppercase tracking-wider text-cyan-50">Future Divergence Timeline</h2>
+        <span className="ml-4 text-[10px] font-mono text-cyan-300/50 uppercase tracking-widest">300 Futures Simulated</span>
       </div>
 
-      <div className="h-56 rounded-md border border-white/10 bg-black/20 p-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <XAxis dataKey="day" stroke="#94a3b8" fontSize={11} />
-            <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} />
-            <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.12)", color: "white" }} />
-            <Line type="monotone" dataKey="merge" stroke="#fb7185" strokeWidth={3} dot={false} />
-            <Line type="monotone" dataKey="canary" stroke="#22d3ee" strokeWidth={3} dot={false} />
-            <Line type="monotone" dataKey="tests" stroke="#34d399" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="split" stroke="#f59e0b" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-4">
-        <input
-          aria-label="Future timeline day"
-          className="w-full accent-cyan-300"
-          type="range"
-          min={0}
-          max={3}
-          step={1}
-          value={dayIndex}
-          onChange={(event) => setDayIndex(Number(event.target.value))}
-          disabled={!active}
-        />
-        <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
-          <span>Now</span>
-          <span>Day +1</span>
-          <span>Day +7</span>
-          <span>Day +30</span>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        {simulation?.strategies.map((strategy, index) => (
-          <motion.div
-            key={strategy.id}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: active ? 1 : 0.35, y: 0 }}
-            transition={{ delay: index * 0.08 }}
-            className="rounded-md border border-white/10 bg-white/[0.04] p-3"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">{strategy.name}</p>
-              <span className={strategy.id === "merge_now" && !mitigated ? "text-rose-300" : "text-cyan-200"}>{current[index]?.risk ?? strategy.risk_score}</span>
+      <div className="flex-1 flex flex-col gap-2 relative">
+        {/* Timeline Axis */}
+        <div className="absolute top-0 bottom-0 left-[200px] right-0 flex justify-between px-4 pointer-events-none">
+          {[0, 1, 7, 30].map((day, idx) => (
+            <div key={day} className="h-full flex flex-col items-center">
+              <div className="w-px flex-1 bg-white/5 border-l border-dashed border-white/10" />
+              <div className="mt-2 text-[9px] font-mono text-slate-500 uppercase">Day {day === 0 ? "Now" : `+${day}`}</div>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">{current[index]?.label}</p>
-          </motion.div>
-        ))}
+          ))}
+        </div>
+
+        {/* Strategies Divergence */}
+        {simulation.strategies.map((strategy, index) => {
+          const Icon = icons[index % icons.length];
+          const isMergeNow = strategy.id === "merge_now";
+          const highlight = isMergeNow && !mitigated ? "text-rose-400 border-rose-500/30 bg-rose-500/10" : "text-cyan-300 border-cyan-500/20 bg-cyan-500/5";
+          
+          return (
+            <motion.div
+              key={strategy.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: active ? 1 : 0.3, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`flex-1 flex items-center rounded-lg border backdrop-blur-sm relative z-10 ${highlight} overflow-hidden`}
+            >
+              {/* Strategy Header */}
+              <div className="w-[200px] px-4 py-2 border-r border-white/10 flex flex-col justify-center bg-black/40 h-full">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className="h-3 w-3" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">{strategy.name}</span>
+                </div>
+                <div className="text-[10px] font-mono opacity-60">Risk: {strategy.risk_score} / Conf: {(strategy.confidence * 100).toFixed(0)}%</div>
+              </div>
+
+              {/* Timeline Track */}
+              <div className="flex-1 flex justify-between items-center px-4 h-full relative">
+                {/* Connecting Line */}
+                <div className="absolute left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent top-1/2 -translate-y-1/2" />
+
+                {strategy.timeline.map((point, pIndex) => {
+                  const isHighRisk = point.risk >= 70;
+                  const nodeColor = isHighRisk && (!mitigated || isMergeNow) ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]" : "bg-cyan-500";
+                  
+                  return (
+                    <div key={point.day} className="relative z-10 flex flex-col items-center group cursor-crosshair">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: active ? 1 : 0 }}
+                        transition={{ delay: (index * 0.1) + (pIndex * 0.2) }}
+                        className={`h-2 w-2 rounded-full ${nodeColor} group-hover:scale-150 transition-transform`}
+                      />
+                      <div className="absolute top-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 border border-white/20 p-2 rounded text-[10px] w-32 -translate-x-1/2 left-1/2 pointer-events-none shadow-2xl">
+                        <div className="text-white font-semibold mb-1">Risk Level: {point.risk}</div>
+                        <div className="text-muted-foreground leading-tight">{point.label}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
-    </Panel>
+    </div>
   );
 }
-

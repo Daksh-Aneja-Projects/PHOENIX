@@ -1,0 +1,112 @@
+{
+  "id": "scenario_gitlab",
+  "name": "GitLab Project GitLab",
+  "merge_request": {
+    "id": "499090362",
+    "iid": 242036,
+    "title": "Draft: [Frontend] Malware blocking enabled pill in policy drawer",
+    "author": "Artur Fedorov",
+    "branch": "601964-malware-drawer-pill",
+    "files_changed": 9,
+    "pipeline_status": "passing",
+    "review_status": "approved",
+    "orbit_source": "GitLab Orbit"
+  },
+  "orbit_context": {
+    "teams": [
+      "Identity",
+      "Mobile",
+      "Payments",
+      "Security"
+    ],
+    "ownership": [
+      {
+        "team": "Identity",
+        "owns": "identity-service"
+      },
+      {
+        "team": "Mobile",
+        "owns": "mobile-api"
+      },
+      {
+        "team": "Payments",
+        "owns": "checkout-api"
+      },
+      {
+        "team": "Security",
+        "owns": "security-platform"
+      }
+    ],
+    "pipelines": [
+      {
+        "name": "pipeline-2622884917",
+        "status": "running",
+        "coverage": 85
+      },
+      {
+        "name": "pipeline-2622883988",
+        "status": "running",
+        "coverage": 80
+      },
+      {
+        "name": "pipeline-2622883239",
+        "status": "running",
+        "coverage": 71
+      }
+    ],
+    "vulnerabilities": [
+      {
+        "id": "VULN-JWT-19",
+        "title": "JWT library stale version",
+        "severity": "high",
+        "service": "identity-service"
+      }
+    ],
+    "incidents": [
+      {
+        "id": "INC-603816",
+        "title": "Experiment Implementation:  Remove the Ultimate card from free user billing (copy)",
+        "severity": "sev2",
+        "related_service": "identity-service",
+        "date": "2026-06-23"
+      }
+    ],
+    "work_items": [
+      {
+        "id": "WI-603815",
+        "title": "Experiment Implementation:  Remove the Ultimate card from free user billing",
+        "status": "at-risk",
+        "objective": "Expand enterprise adoption"
+      },
+      {
+        "id": "WI-603813",
+        "title": "Container virtual registry: cached manifest served returns InvalidArgument",
+        "status": "at-risk",
+        "objective": "Expand enterprise adoption"
+      },
+      {
+        "id": "WI-603812",
+        "title": "Backfill merge_request triggers with no filter",
+        "status": "at-risk",
+        "objective": "Expand enterprise adoption"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-Q3-ENT",
+        "title": "Enterprise SSO Launch",
+        "health": "green",
+        "risk_after_mr": "amber"
+      }
+    ],
+    "repository_intelligence": {
+      "contributor_concentration": "LOW",
+      "pipeline_stability": "HIGH",
+      "issue_pressure": "LOW",
+      "release_pressure": "LOW",
+      "ownership_concentration": "LOW",
+      "engineering_load": 15,
+      "score": 100
+    }
+  }
+}
