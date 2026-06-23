@@ -18,20 +18,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function getScenario() {
-  return request<Scenario>("/scenario");
+export function getScenario(scenarioId: string = "scenario_01") {
+  return request<Scenario>(`/scenario?scenario_id=${scenarioId}`);
 }
 
-export function getTwin() {
-  return request<Twin>("/twin");
+export function getTwin(scenarioId: string = "scenario_01") {
+  return request<Twin>(`/twin?scenario_id=${scenarioId}`);
 }
 
-export function runSimulation() {
-  return request<SimulationResult>("/simulate", { method: "POST" });
+export function runSimulation(scenarioId: string = "scenario_01") {
+  return request<SimulationResult>(`/simulate?scenario_id=${scenarioId}`, { method: "POST" });
 }
 
-export function mitigate() {
-  return request<AuditLog>("/agents/mitigate", {
+export function mitigate(scenarioId: string = "scenario_01") {
+  return request<AuditLog>(`/agents/mitigate?scenario_id=${scenarioId}`, {
     method: "POST",
     body: JSON.stringify({ mr_id: "4821" })
   });

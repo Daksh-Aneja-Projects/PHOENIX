@@ -16,14 +16,7 @@ const clusterPositions: Record<string, string> = {
   "Black Swan Futures": "left-[83%] top-[12%]"
 };
 
-const causalExplanation = [
-  { step: "MR #4821", source: "Merge Request + Pipeline" },
-  { step: "Identity Service", source: "Team Ownership + Repository" },
-  { step: "Mobile API", source: "Work Item Dependencies + Pipeline Gap" },
-  { step: "JWT Drift", source: "Vulnerability + Deployment Topology" },
-  { step: "Enterprise SSO Launch", source: "Business Objective + Work Item" },
-  { step: "Customer Impact", source: "Historical Incident + Objective Risk" }
-];
+
 
 export function BlackSwanRadar({
   simulation,
@@ -92,9 +85,9 @@ export function BlackSwanRadar({
                 <p className="text-sm text-muted-foreground">{simulation.black_swan.title}</p>
                 <p className="mt-3 text-xs text-rose-100">{simulation.black_swan.trigger}</p>
                 <div className="mt-3 space-y-2">
-                  {causalExplanation.map((item, index) => (
+                  {simulation.black_swan.causal_chain.map((step, index) => (
                     <motion.div
-                      key={item.step}
+                      key={step}
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.12 }}
@@ -106,8 +99,10 @@ export function BlackSwanRadar({
                         </span>
                       )}
                       <div className="flex items-start justify-between gap-3">
-                        <span className="font-semibold text-white">{item.step}</span>
-                        <span className="max-w-[180px] text-right text-[11px] text-cyan-100">Source: {item.source}</span>
+                        <span className="font-semibold text-white">{step}</span>
+                        <span className="max-w-[180px] text-right text-[11px] text-cyan-100">
+                          Source: {simulation.black_swan.orbit_evidence[index] ?? "Orbit"}
+                        </span>
                       </div>
                     </motion.div>
                   ))}

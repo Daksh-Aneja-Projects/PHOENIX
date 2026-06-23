@@ -20,10 +20,17 @@ export function PhoenixDemo() {
   const [orbitMomentActive, setOrbitMomentActive] = useState(false);
   const [orbitMomentComplete, setOrbitMomentComplete] = useState(false);
   const [judgeMode, setJudgeMode] = useState(false);
-  const scenario = useQuery({ queryKey: ["scenario"], queryFn: getScenario });
-  const twin = useQuery({ queryKey: ["twin"], queryFn: getTwin, enabled: phase >= 1 });
-  const simulation = useMutation({ mutationFn: runSimulation });
-  const agents = useMutation({ mutationFn: mitigate });
+  const [scenarioId, setScenarioId] = useState("scenario_01");
+
+  useEffect(() => {
+    const sid = new URLSearchParams(window.location.search).get("scenario_id");
+    if (sid) setScenarioId(sid);
+  }, []);
+
+  const scenario = useQuery({ queryKey: ["scenario", scenarioId], queryFn: () => getScenario(scenarioId) });
+  const twin = useQuery({ queryKey: ["twin", scenarioId], queryFn: () => getTwin(scenarioId), enabled: phase >= 1 });
+  const simulation = useMutation({ mutationFn: () => runSimulation(scenarioId) });
+  const agents = useMutation({ mutationFn: () => mitigate(scenarioId) });
 
   useEffect(() => {
     if (simulation.data && phase < 4) {
@@ -169,7 +176,7 @@ export function PhoenixDemo() {
                   <AlertTriangle className="h-4 w-4" />
                   Black Swan Detected
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">4.8% probability · critical enterprise SSO impact</p>
+                <p className="mt-2 text-xs text-muted-foreground">{((simulation.data?.black_swan?.probability ?? 0) * 100).toFixed(1)}% probability · {simulation.data?.black_swan?.impact} {scenario.data?.orbit_context?.objectives?.[0]?.title ?? "objective"} impact</p>
               </motion.div>
             )}
           </Panel>

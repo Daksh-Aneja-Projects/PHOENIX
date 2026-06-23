@@ -1,0 +1,38 @@
+{
+  "merge_request": {
+    "id": "6011",
+    "iid": 6011,
+    "title": "Update Log4j dependency to fix CVE-2026-0123",
+    "author": "Security Bot",
+    "branch": "chore/update-log4j",
+    "files_changed": 2,
+    "pipeline_status": "passing",
+    "review_status": "unreviewed",
+    "orbit_source": "synthetic GitLab Orbit context"
+  },
+  "orbit_context": {
+    "teams": ["Core Platform", "Search", "Data Engineering"],
+    "ownership": [
+      {"team": "Core Platform", "owns": "auth-service"},
+      {"team": "Search", "owns": "search-indexer"},
+      {"team": "Data Engineering", "owns": "analytics-pipeline"}
+    ],
+    "pipelines": [
+      {"name": "unit-tests", "status": "passing", "coverage": 70},
+      {"name": "security-scan", "status": "passing", "coverage": 100}
+    ],
+    "vulnerabilities": [
+      {"id": "VULN-LOG-01", "title": "CVE-2026-0123 RCE", "severity": "critical", "service": "auth-service"},
+      {"id": "VULN-LOG-02", "title": "CVE-2026-0123 RCE", "severity": "critical", "service": "search-indexer"}
+    ],
+    "incidents": [
+      {"id": "INC-2024-0301", "title": "Dependency bump broke search", "severity": "sev2", "related_service": "search-indexer"}
+    ],
+    "work_items": [
+      {"id": "WI-3301", "title": "Q3 Security Patching", "status": "in-progress", "objective": "Zero critical CVEs"}
+    ],
+    "objectives": [
+      {"id": "OBJ-SEC-01", "title": "Zero critical CVEs SLA", "health": "red", "risk_after_mr": "green"}
+    ]
+  }
+}

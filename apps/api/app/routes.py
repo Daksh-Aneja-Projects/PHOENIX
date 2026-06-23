@@ -13,26 +13,25 @@ agent_service = AgentService(repository)
 
 
 @router.get("/scenario", response_model=Scenario)
-async def get_scenario() -> Scenario:
-    return await scenario_service.get_scenario()
+async def get_scenario(scenario_id: str = "scenario_01") -> Scenario:
+    return await scenario_service.get_scenario(scenario_id)
 
 
 @router.get("/twin", response_model=Twin)
-async def get_twin() -> Twin:
-    return await twin_service.get_twin()
+async def get_twin(scenario_id: str = "scenario_01") -> Twin:
+    return await twin_service.get_twin(scenario_id)
 
 
 @router.post("/simulate", response_model=SimulationResult)
-async def simulate() -> SimulationResult:
-    return await simulation_service.simulate()
+async def simulate(scenario_id: str = "scenario_01") -> SimulationResult:
+    return await simulation_service.simulate(scenario_id)
 
 
 @router.post("/agents/mitigate", response_model=AuditLog)
-async def mitigate(request: MitigationRequest) -> AuditLog:
-    return await agent_service.mitigate(request)
+async def mitigate(request: MitigationRequest, scenario_id: str = "scenario_01") -> AuditLog:
+    return await agent_service.mitigate(request, scenario_id)
 
 
 @router.get("/audit", response_model=AuditLog)
-async def audit() -> AuditLog:
-    return await agent_service.audit()
-
+async def audit(scenario_id: str = "scenario_01") -> AuditLog:
+    return await agent_service.audit(scenario_id)

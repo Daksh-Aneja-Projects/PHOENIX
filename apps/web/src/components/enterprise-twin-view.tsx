@@ -11,18 +11,7 @@ import { cn } from "@/lib/utils";
 import { OrbitInsightPanel } from "@/components/orbit-insight-panel";
 import { RiskCollapse } from "@/components/risk-collapse";
 
-const positions: Record<string, { x: number; y: number }> = {
-  "mr-4821": { x: 20, y: 155 },
-  "identity-service": { x: 245, y: 145 },
-  "checkout-api": { x: 475, y: 75 },
-  "mobile-api": { x: 475, y: 230 },
-  "payments-gateway": { x: 705, y: 75 },
-  "enterprise-sso": { x: 710, y: 230 },
-  "team-identity": { x: 245, y: 0 },
-  "team-security": { x: 705, y: 370 },
-  "vuln-jwt": { x: 475, y: 370 },
-  "incident-session": { x: 20, y: 370 }
-};
+import dagre from "dagre";
 
 function TwinNode({ data }: { data: { label: string; type: string; risk: number; orbit: string; active: boolean; mitigated: boolean } }) {
   const isHot = data.active && data.risk > 70 && !data.mitigated;
@@ -53,13 +42,33 @@ const nodeTypes = { twin: TwinNode };
 
 export function EnterpriseTwinView({ twin, active, mitigated }: { twin?: Twin; active: boolean; mitigated: boolean }) {
   const flow = useMemo(() => {
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 200 });
+
+    twin?.nodes.forEach((node) => {
+      dagreGraph.setNode(node.id, { width: 160, height: 80 });
+    });
+
+    twin?.edges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(dagreGraph);
+
     const nodes: Node[] =
-      twin?.nodes.map((node) => ({
-        id: node.id,
-        type: "twin",
-        position: positions[node.id] ?? { x: 0, y: 0 },
-        data: { ...node, active, mitigated }
-      })) ?? [];
+      twin?.nodes.map((node) => {
+        const nodeWithPosition = dagreGraph.node(node.id);
+        return {
+          id: node.id,
+          type: "twin",
+          position: {
+            x: nodeWithPosition.x - 160 / 2,
+            y: nodeWithPosition.y - 80 / 2
+          },
+          data: { ...node, active, mitigated }
+        };
+      }) ?? [];
 
     const edges: Edge[] =
       twin?.edges.map((edge) => ({
