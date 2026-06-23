@@ -1,64 +1,72 @@
 # Project Phoenix
 
-The Decision Intelligence Layer for Software Delivery.
+The Decision Intelligence & Operational Intelligence System for Software Delivery.
 
-Phoenix is a GitLab Transcend Hackathon MVP that demonstrates:
+Phoenix is a cutting-edge repository intelligence platform built to monitor, simulate, and mitigate catastrophic risk in enterprise software delivery. Rather than reacting to incidents after they happen, Phoenix constructs a "Software Future Twin" to simulate thousands of potential outcomes from a single Merge Request and deploys autonomous agents to prevent "Black Swan" events before the code is merged.
 
-- Orbit-powered Software Future Twin
-- Future Timeline Simulation
-- Black Swan Detection
-- Autonomous Mitigation Agents
+## Core Capabilities
 
-The MVP is intentionally demo-focused: one curated merge request, three cinematic screens, real API calls, deterministic simulation, and auditable mitigation actions.
+- **Repository Intelligence Ingestion:** Automatically builds an enterprise context graph using live GitLab merge requests, milestones, issues, contributors, and pipelines.
+- **Software Future Twin:** Reconstructs your repository's microservices, dependencies, teams, and ownership into an active graph.
+- **Diverging Timeline Simulation:** Runs context-aware simulations (via `ContextualRiskEngine`) mapping out the probability of failures across multiple mitigation strategies.
+- **Black Swan Discovery:** Detects high-impact, low-probability cascading failures based on deep context.
+- **Agent Mitigations:** Autonomous agent planning to deploy contract testing, security canary rollouts, or compliance gates.
 
-## Demo Story
-
-1. User opens Phoenix.
-2. Merge Request `#4821` is displayed.
-3. Enterprise Twin View visualizes the software organization.
-4. Orbit context is ingested.
-5. Risk propagates through the Software Future Twin.
-6. Future Timeline simulates multiple futures.
-7. Black Swan Future is discovered.
-8. Mitigation agents execute.
-9. Recommendation is produced.
-10. Risk is visibly reduced.
-
-## Repository
+## Architecture
 
 ```text
-apps/api      FastAPI backend
-apps/web      Next.js App Router frontend
-demo-data     Synthetic Orbit-derived scenario fixtures
-docs          Demo and architecture notes
+apps/api      FastAPI backend (ContextualRiskEngine, BlackSwanEngine, DecisionEngine)
+apps/web      Next.js App Router frontend (Live Intelligence Operations UI)
+data-cache    Local fixture repository cache for real-time repository data
 ```
 
-## Run Locally
+The system operates by integrating directly with GitLab via `GitLabConnector`, adapting the raw repository data into `OrbitContext` through the `GitLabToOrbitAdapter`, generating a `Twin` graph, and executing simulations.
 
-Backend:
+## Local Setup
+
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- A GitLab Personal Access Token
+
+### Backend API
+The backend requires a `GITLAB_TOKEN` to parse live repositories.
 
 ```powershell
-cd D:\Phoenix
+cd apps/api
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".\apps\api[dev]"
-cd D:\Phoenix\apps\api
-D:\Phoenix\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+
+# Copy .env configuration
+cp .env.example .env
+# Edit .env and insert your GITLAB_TOKEN
+
+# Start the server
+uvicorn app.main:app --reload --port 8000
 ```
 
-Frontend:
+### Frontend UI
+The UI requires the `NEXT_PUBLIC_API_BASE_URL` pointing to your backend.
 
 ```powershell
-cd D:\Phoenix\apps\web
-npm.cmd install
-npm.cmd run dev
+cd apps/web
+npm install
+
+# Copy .env configuration
+cp .env.example .env
+
+# Start the dev server
+npm run dev
 ```
 
-Open `http://localhost:3000`.
+## Running the Intelligence Center
 
-## API
+1. Open `http://localhost:3000`
+2. You can test live repository intelligence by appending the project parameter:
+   `http://localhost:3000/?source=gitlab`
+3. (Demo Mode) To automatically run the 120-second cinematic simulation rollout:
+   `http://localhost:3000/?source=gitlab&judge=true`
 
-- `GET /scenario`
-- `GET /twin`
-- `POST /simulate`
-- `POST /agents/mitigate`
-- `GET /audit`
+## License
+MIT License.

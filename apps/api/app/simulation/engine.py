@@ -93,14 +93,23 @@ class ContextualRiskEngine:
                     TimelinePoint(day=3, risk=max(10, base_risk - 20), label="Pipeline Fixes"),
                     TimelinePoint(day=7, risk=max(10, base_risk - 40), label="Safe Merge")
                 ]
+            ),
+            FutureStrategy(
+                id="agent_ops",
+                name="Deploy Agent Mitigation",
+                risk_score=max(5, base_risk - 50),
+                confidence=0.98,
+                incident_probability=base_risk / 600,
+                deployment_success_probability=0.999,
+                security_exposure=max(0, base_risk - 50),
+                delivery_delay_days=4.0,
+                timeline=[
+                    TimelinePoint(day=1, risk=base_risk, label="Agent Init"),
+                    TimelinePoint(day=3, risk=max(5, base_risk - 40), label="Analysis"),
+                    TimelinePoint(day=7, risk=max(5, base_risk - 50), label="Protected")
+                ]
             )
         ]
-
-        # The actual DecisionEngine will process this to generate the final decision/recommendation,
-        # but we provide a dummy Recommendation here which DecisionEngine will override.
-        # Wait, the models demand `decision` on SimulationResult. So the service will need to populate it.
-        # Let's populate a placeholder or just let ContextualRiskEngine call DecisionEngine.
-        # Actually, let's keep them decoupled in services.py. I'll provide a dummy for now.
         
         dummy_recommendation = Recommendation(
             strategy="TBD",
