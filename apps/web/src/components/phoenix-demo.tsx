@@ -4,7 +4,7 @@ import { Activity, AlertTriangle, GitMerge, Radar, ShieldCheck, Sparkles, Zap } 
 import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getScenario, getTwin, mitigate, runSimulation, getExplainability } from "@/lib/api";
+import { getScenario, getTwin, mitigate, runSimulation, getExplainability, ingestGitlab } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -13,7 +13,7 @@ import { EnterpriseMemoryPanel } from "@/components/enterprise-memory-panel";
 import { FutureTimeline } from "@/components/future-timeline";
 import { BlackSwanRadar } from "@/components/black-swan-radar";
 import { OrbitMoment } from "@/components/orbit-moment";
-import { BrainCircuit } from "lucide-react";
+import { BrainCircuit, Globe } from "lucide-react";
 
 const phases = ["Standby", "Orbit Ingested", "Twin Propagating", "Futures Simulated", "Black Swan Found", "Mitigated"];
 
@@ -23,6 +23,7 @@ export function PhoenixDemo() {
   const [orbitMomentComplete, setOrbitMomentComplete] = useState(false);
   const [judgeMode, setJudgeMode] = useState(false);
   const [scenarioId, setScenarioId] = useState("scenario_01");
+  const [gitlabStats, setGitlabStats] = useState<{project?: string, mrs?: number, pipelines?: number, issues?: number, contributors?: number, risk_signals_generated?: number, repository_intelligence_score?: number} | null>(null);
 
   useEffect(() => {
     const sid = new URLSearchParams(window.location.search).get("scenario_id");
@@ -60,8 +61,27 @@ export function PhoenixDemo() {
     return () => timers.forEach(window.clearTimeout);
   }, [judgeMode, scenario.data]);
 
-  const ingestOrbit = () => {
+  const ingestOrbit = async () => {
     setPhase(1);
+    if (new URLSearchParams(window.location.search).get("source") === "gitlab") {
+      try {
+        const projectId = new URLSearchParams(window.location.search).get("project_id") || "278964";
+        const stats = await ingestGitlab(projectId);
+        setScenarioId(stats.context_id);
+        setGitlabStats({
+          project: projectId,
+          mrs: stats.mrs,
+          pipelines: stats.pipelines,
+          issues: stats.issues,
+          contributors: stats.contributors,
+          risk_signals_generated: stats.risk_signals_generated,
+          repository_intelligence_score: stats.repository_intelligence_score
+        });
+      } catch (e) {
+        console.error("GitLab ingestion failed, falling back to scenario_01", e);
+        setScenarioId("scenario_01");
+      }
+    }
     window.setTimeout(() => setPhase(2), 800);
   };
 
@@ -169,6 +189,45 @@ export function PhoenixDemo() {
                     Incident probability {(simulation.data.recommendation.before_incident_probability * 100).toFixed(0)}% →{" "}
                     {(simulation.data.recommendation.after_incident_probability * 100).toFixed(0)}%
                   </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {simulation.data?.decision && phase >= 3 && (
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-md border border-white/10 bg-black/40 p-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-white mb-2">
+                    <BrainCircuit className="h-4 w-4" />
+                    Decision Evidence
+                  </div>
+                  <div className="space-y-1.5 mt-2">
+                    {simulation.data.decision.supporting_evidence.map((evidence: string, idx: number) => (
+                      <div key={idx} className="text-xs text-muted-foreground flex items-center gap-2">
+                        <span className="h-1 w-1 rounded-full bg-cyan-400" />
+                        <span dangerouslySetInnerHTML={{ __html: evidence.replace('→', '→ <strong class="text-white">').concat('</strong>') }} />
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {gitlabStats && phase >= 1 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-emerald-300/25 bg-emerald-400/10 p-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-100 mb-2">
+                    <Globe className="h-4 w-4" />
+                    Live Context Source
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div>Project: <span className="text-white">{gitlabStats.project}</span></div>
+                    <div>Contributors: <span className="text-white">{gitlabStats.contributors}</span></div>
+                    <div>MR Count: <span className="text-white">{gitlabStats.mrs}</span></div>
+                    <div>Issue Count: <span className="text-white">{gitlabStats.issues}</span></div>
+                    <div>Pipeline Count: <span className="text-white">{gitlabStats.pipelines}</span></div>
+                    <div>Risk Signals: <span className="text-white">{gitlabStats.risk_signals_generated}</span></div>
+                    <div className="col-span-2 mt-1">Intelligence Score: <span className="text-emerald-300 font-bold">{gitlabStats.repository_intelligence_score}/100</span></div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

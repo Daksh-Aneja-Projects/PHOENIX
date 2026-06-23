@@ -41,3 +41,9 @@ export function getExplainability(scenarioId: string = "scenario_01") {
   return request<OrbitExplainability>(`/context/${scenarioId}/explain`);
 }
 
+export function ingestGitlab(projectId: string) {
+  return request<{ context_id: string; services: number; contributors: number; pipelines: number; issues: number; mrs: number; risk_signals_generated: number; repository_intelligence_score: number }>(`/ingest/gitlab`, {
+    method: "POST",
+    body: JSON.stringify({ project_id: projectId })
+  });
+}

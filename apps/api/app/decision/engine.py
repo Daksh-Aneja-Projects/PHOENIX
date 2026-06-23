@@ -12,8 +12,15 @@ class DecisionEngine:
                 rejected_alternatives.append({"strategy": s.name, "reason": reason})
 
         supporting_evidence = []
+        intel = orbit.repository_intelligence or {}
+        if intel:
+            supporting_evidence.append(f"Contributor Concentration → {intel.get('contributor_concentration', 'UNKNOWN')}")
+            supporting_evidence.append(f"Pipeline Stability → {intel.get('pipeline_stability', 'UNKNOWN')}")
+            supporting_evidence.append(f"Issue Pressure → {intel.get('issue_pressure', 'UNKNOWN')}")
+            supporting_evidence.append(f"Release Pressure → {intel.get('release_pressure', 'UNKNOWN')}")
+
         if orbit.incidents:
-            supporting_evidence.append(f"Avoids repeating {orbit.incidents[0]['title']}")
+            supporting_evidence.append(f"Historical Incident Similarity → HIGH")
         if orbit.vulnerabilities:
             supporting_evidence.append(f"Mitigates exposure to {orbit.vulnerabilities[0]['title']}")
         if not supporting_evidence:

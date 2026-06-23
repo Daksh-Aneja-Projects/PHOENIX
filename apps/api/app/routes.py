@@ -3,7 +3,9 @@ from fastapi import APIRouter
 from app.models import AuditLog, MitigationRequest, Scenario, SimulationResult, Twin, OrbitContext, OrbitExplainability
 from app.repositories import JsonFixtureRepository
 from app.services import AgentService, ScenarioService, SimulationService, TwinService, MemoryService
-
+from app.gitlab.connector import GitLabConnector
+from app.gitlab.adapter import GitLabToOrbitAdapter
+from pydantic import BaseModel
 router = APIRouter()
 repository = JsonFixtureRepository()
 scenario_service = ScenarioService(repository)
@@ -16,6 +18,32 @@ memory_service = MemoryService(repository)
 @router.post("/ingest")
 async def ingest(orbit: OrbitContext) -> dict[str, int]:
     return await memory_service.ingest(orbit)
+
+
+class IngestGitlabRequest(BaseModel):
+    project_id: str
+
+
+@router.post("/ingest/gitlab")
+async def ingest_gitlab(req: IngestGitlabRequest) -> dict:
+    connector = GitLabConnector()
+    adapter = GitLabToOrbitAdapter()
+    scenario = adapter.adapt(req.project_id, connector)
+    
+    repository.save(f"{scenario.id}.json", scenario.model_dump())
+    
+    intel = scenario.orbit_context.repository_intelligence or {}
+    
+    return {
+        "context_id": scenario.id,
+        "services": len(scenario.orbit_context.ownership),
+        "contributors": len(connector.fetch_contributors(req.project_id)),
+        "pipelines": len(scenario.orbit_context.pipelines),
+        "issues": len(scenario.orbit_context.incidents) + len(scenario.orbit_context.work_items),
+        "mrs": len(connector.fetch_merge_requests(req.project_id)),
+        "risk_signals_generated": len(intel.keys()) - 1 if intel else 0,
+        "repository_intelligence_score": intel.get("score", 100) if intel else 100
+    }
 
 
 @router.get("/context/{scenario_id}/explain", response_model=OrbitExplainability)

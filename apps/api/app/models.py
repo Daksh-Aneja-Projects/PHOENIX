@@ -23,6 +23,7 @@ class OrbitContext(BaseModel):
     incidents: list[dict[str, str]]
     work_items: list[dict[str, str]]
     objectives: list[dict[str, str]]
+    repository_intelligence: dict = Field(default_factory=dict)
 
 
 class Scenario(BaseModel):

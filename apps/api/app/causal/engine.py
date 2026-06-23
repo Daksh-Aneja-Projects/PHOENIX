@@ -11,8 +11,58 @@ class BlackSwanEngine:
         has_incidents = any(m.type == "incident" for m in memories)
         has_vulns = any(m.type == "dependency" for m in memories)
         has_complex_ownership = len([m for m in memories if m.type == "ownership"]) > 2
+        
+        intel = orbit.repository_intelligence or {}
+        single_maintainer = intel.get("contributor_concentration") == "HIGH"
+        issue_backlog = intel.get("issue_pressure") == "HIGH"
+        release_pressure = intel.get("release_pressure") == "HIGH"
+        pipeline_instability = intel.get("pipeline_stability") == "LOW"
 
-        if has_incidents and has_vulns and has_complex_ownership:
+        if single_maintainer and has_incidents:
+            return BlackSwan(
+                probability=0.15,
+                impact="critical",
+                title="Bus factor vulnerability exposed during outage",
+                trigger="Key maintainer unavailable during cascading failure",
+                causal_chain=[
+                    "MR #4821 merges and introduces regression",
+                    "Pipeline instability masks the failure",
+                    "Incident triggered in production",
+                    "Single maintainer is offline",
+                    "Extended downtime due to knowledge silo"
+                ],
+                orbit_evidence=["Contributor Memory", "Historical Incident Memory"]
+            )
+        elif release_pressure and pipeline_instability:
+            return BlackSwan(
+                probability=0.12,
+                impact="high",
+                title="Critical release collision",
+                trigger="Deployment pressure forces bypass of failing tests",
+                causal_chain=[
+                    "High number of active milestones",
+                    "Engineers ignore intermittent test failures",
+                    "Bad merge goes to production",
+                    "Rollback fails due to database migration"
+                ],
+                orbit_evidence=["Release Memory", "Pipeline Memory"]
+            )
+        elif issue_backlog and has_vulns:
+            return BlackSwan(
+                probability=0.09,
+                impact="critical",
+                title="Vulnerability exploited via unpatched backlog",
+                trigger="Attacker targets known vulnerability buried in backlog",
+                causal_chain=[
+                    "High issue backlog obscures critical security patch",
+                    "Automated scan discovers vulnerability",
+                    "Patch delayed by engineering load",
+                    "Active exploit in production"
+                ],
+                orbit_evidence=["Issue Memory", "Vulnerability Memory"]
+            )
+        elif has_incidents and has_vulns and has_complex_ownership:
+
             # Complex Enterprise scenario
             return BlackSwan(
                 probability=0.08,

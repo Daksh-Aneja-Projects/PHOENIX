@@ -60,6 +60,46 @@ class MemoryEngine:
                 description=f"Known {vuln['severity']} vulnerability: {vuln['title']}."
             ))
 
+        # Repository Intelligence Memory
+        intel = orbit.repository_intelligence
+        if intel:
+            if intel.get("contributor_concentration") == "HIGH":
+                memories.append(MemoryObject(
+                    id=f"mem-{uuid.uuid4().hex[:8]}",
+                    type="ownership",
+                    title="Single Maintainer Risk",
+                    relevance_score=0.9,
+                    orbit_signals=["contributor_concentration", "HIGH"],
+                    description="Repository has high contributor concentration, indicating key person dependency."
+                ))
+            if intel.get("pipeline_stability") == "LOW":
+                memories.append(MemoryObject(
+                    id=f"mem-{uuid.uuid4().hex[:8]}",
+                    type="deployment",
+                    title="Pipeline Instability",
+                    relevance_score=0.85,
+                    orbit_signals=["pipeline_stability", "LOW"],
+                    description="Repository shows a history of frequent pipeline failures."
+                ))
+            if intel.get("release_pressure") == "HIGH":
+                memories.append(MemoryObject(
+                    id=f"mem-{uuid.uuid4().hex[:8]}",
+                    type="deployment",
+                    title="Critical Release Collision",
+                    relevance_score=0.8,
+                    orbit_signals=["release_pressure", "HIGH"],
+                    description="High number of active milestones creating deployment pressure."
+                ))
+            if intel.get("issue_pressure") == "HIGH":
+                memories.append(MemoryObject(
+                    id=f"mem-{uuid.uuid4().hex[:8]}",
+                    type="work_item",
+                    title="High Issue Backlog",
+                    relevance_score=0.75,
+                    orbit_signals=["issue_pressure", "HIGH"],
+                    description="Significant accumulation of unresolved issues."
+                ))
+
         return memories
 
     def get_readiness_score(self, orbit: OrbitContext) -> int:
