@@ -164,12 +164,17 @@ Signals derived from contributors, milestones, issues, pipelines, labels, and ow
 
 ## Screenshots
 
-*(Insert screenshots here)*
-- [x] Enterprise Memory & Repository Intelligence
-- [x] Software Future Twin Graph
-- [x] Black Swan Radar
-- [x] Diverging Future Timeline
-- [x] Agent Mission Control
+### Software Future Twin
+![Software Future Twin Graph](docs/screenshots/software-future-twin.png)
+
+### Black Swan Discovery
+![Black Swan Radar](docs/screenshots/black-swan-radar.png)
+
+### Diverging Future Timeline
+![Diverging Future Timeline](docs/screenshots/divergence-timeline.png)
+
+### Agent Mission Control & Decision Intelligence
+![Agent Mission Control](docs/screenshots/decision-intelligence.png)
 
 ---
 
