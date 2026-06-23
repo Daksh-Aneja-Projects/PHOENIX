@@ -2,71 +2,183 @@
 
 The Decision Intelligence & Operational Intelligence System for Software Delivery.
 
-Phoenix is a cutting-edge repository intelligence platform built to monitor, simulate, and mitigate catastrophic risk in enterprise software delivery. Rather than reacting to incidents after they happen, Phoenix constructs a "Software Future Twin" to simulate thousands of potential outcomes from a single Merge Request and deploys autonomous agents to prevent "Black Swan" events before the code is merged.
+Phoenix is a repository intelligence platform that monitors, simulates, and mitigates catastrophic risk in enterprise software delivery.
+
+Rather than reacting to incidents after they happen, Phoenix constructs a Software Future Twin that models the downstream impact of software decisions, discovers Black Swan risks, and coordinates mitigations before deployment.
+
+---
 
 ## Core Capabilities
 
-- **Repository Intelligence Ingestion:** Automatically builds an enterprise context graph using live GitLab merge requests, milestones, issues, contributors, and pipelines.
-- **Software Future Twin:** Reconstructs your repository's microservices, dependencies, teams, and ownership into an active graph.
-- **Diverging Timeline Simulation:** Runs context-aware simulations (via `ContextualRiskEngine`) mapping out the probability of failures across multiple mitigation strategies.
-- **Black Swan Discovery:** Detects high-impact, low-probability cascading failures based on deep context.
-- **Agent Mitigations:** Autonomous agent planning to deploy contract testing, security canary rollouts, or compliance gates.
+### Repository Intelligence Ingestion
+Automatically builds enterprise context from GitLab repositories using:
+* Merge Requests
+* Contributors
+* Issues
+* Milestones
+* Pipelines
+* Labels
+* Ownership Signals
+
+### Software Future Twin
+Builds a living graph connecting:
+* Teams
+* Services
+* Objectives
+* Dependencies
+* Vulnerabilities
+* Incidents
+* Repository Intelligence Signals
+
+### Diverging Timeline Simulation
+Simulates multiple delivery strategies and evaluates:
+* Incident Probability
+* Blast Radius
+* Confidence
+* Risk Evolution
+
+### Black Swan Discovery
+Identifies low-probability, high-impact cascading failures hidden behind seemingly safe changes.
+
+### Decision Intelligence
+Evaluates competing strategies and explains:
+* Recommended Path
+* Supporting Evidence
+* Rejected Alternatives
+
+### Agent Mitigations
+Coordinates mitigation workflows such as:
+* Security Reviews
+* Contract Validation
+* Canary Gates
+* Dependency Remediation
+
+---
 
 ## Architecture
 
-```text
-apps/api      FastAPI backend (ContextualRiskEngine, BlackSwanEngine, DecisionEngine)
-apps/web      Next.js App Router frontend (Live Intelligence Operations UI)
-data-cache    Local fixture repository cache for real-time repository data
-```
+**apps/api** — FastAPI backend
+* ContextualRiskEngine
+* BlackSwanEngine
+* DecisionEngine
+* MemoryEngine
+* FutureTwinGenerator
 
-The system operates by integrating directly with GitLab via `GitLabConnector`, adapting the raw repository data into `OrbitContext` through the `GitLabToOrbitAdapter`, generating a `Twin` graph, and executing simulations.
+**apps/web** — Next.js Operational Intelligence UI
+* Future Twin
+* Divergence Timeline
+* Enterprise Memory
+* Decision Intelligence
+* Agent Operations
+
+The system ingests repository context through `GitLabConnector`, transforms it into `OrbitContext` via `GitLabToOrbitAdapter`, constructs a Software Future Twin, and executes simulations against that model.
+
+---
 
 ## Local Setup
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.10+
-- A GitLab Personal Access Token
+* Node.js 18+
+* Python 3.10+
+* GitLab Personal Access Token
 
-### Backend API
-The backend requires a `GITLAB_TOKEN` to parse live repositories.
+### Backend
 
 ```powershell
 cd apps/api
 python -m venv .venv
+# Activate virtual environment
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 
-# Copy .env configuration
+# Create .env from .env.example
 cp .env.example .env
-# Edit .env and insert your GITLAB_TOKEN
 
-# Start the server
+# Populate:
+# GITLAB_TOKEN=<token>
+
+# Start API:
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend UI
-The UI requires the `NEXT_PUBLIC_API_BASE_URL` pointing to your backend.
+### Frontend
 
 ```powershell
 cd apps/web
 npm install
 
-# Copy .env configuration
+# Create .env from .env.example
 cp .env.example .env
 
-# Start the dev server
+# Populate:
+# NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+
+# Start UI:
 npm run dev
 ```
 
-## Running the Intelligence Center
+---
 
-1. Open `http://localhost:3000`
-2. You can test live repository intelligence by appending the project parameter:
-   `http://localhost:3000/?source=gitlab`
-3. (Demo Mode) To automatically run the 120-second cinematic simulation rollout:
-   `http://localhost:3000/?source=gitlab&judge=true`
+## Running Phoenix
+
+**Standard Mode:**
+`http://localhost:3000`
+
+**Live GitLab Mode:**
+`http://localhost:3000/?source=gitlab`
+
+**Judge Mode:**
+`http://localhost:3000/?source=gitlab&judge=true`
+
+---
+
+## Key Concepts
+
+### Software Future Twin
+A graph representation of repository context, ownership, dependencies, incidents, objectives, and risks.
+
+### Enterprise Memory
+Structured organizational memory extracted from historical incidents, deployment history, ownership mappings, and repository intelligence.
+
+### Black Swan Event
+A low-probability, high-impact outcome discovered through simulation and causal reasoning.
+
+### Repository Intelligence
+Signals derived from contributors, milestones, issues, pipelines, labels, and ownership patterns.
+
+---
+
+## API Endpoints
+
+- `GET /health` - Service health check
+- `POST /ingest` - Ingest raw orbit context
+- `POST /ingest/gitlab` - Dynamically fetch and ingest data from a real GitLab project
+- `GET /context/{scenario_id}/explain` - Retrieve Enterprise Memory and deep contextual insights
+- `GET /scenario` - Fetch the raw scenario context
+- `GET /twin` - Generate and retrieve the connected Software Future Twin graph
+- `POST /simulate` - Run the context-aware simulation and black swan discovery engine
+- `POST /agents/mitigate` - Deploy autonomous agents to reduce predicted risk
+- `GET /audit` - Retrieve the logs of executed mitigations
+
+---
+
+## Screenshots
+
+*(Insert screenshots here)*
+- [x] Enterprise Memory & Repository Intelligence
+- [x] Software Future Twin Graph
+- [x] Black Swan Radar
+- [x] Diverging Future Timeline
+- [x] Agent Mission Control
+
+---
+
+## Demo Video
+
+[Watch the Phoenix Demo Video (Devpost)](#) *(Link to be updated upon submission)*
+
+---
 
 ## License
-MIT License.
+
+MIT License
