@@ -16,48 +16,56 @@ class FutureTwinGenerator:
         mr_id = f"mr-{scenario.merge_request.iid}"
         nodes.append(TwinNode(id=mr_id, label=f"MR #{scenario.merge_request.iid}", type="merge_request", risk=50, orbit="GitLab Orbit"))
 
-        # Add Teams and Ownership
         services_owned = {}
+        # 1. Services & Ownership
         for owner in orbit.ownership:
             team_id = f"team-{owner['team'].lower().replace(' ', '-')}"
-            service_id = owner['owns']
+            service_id = f"service-{owner['owns'].lower().replace(' ', '-')}"
             
             if not any(n.id == team_id for n in nodes):
-                nodes.append(TwinNode(id=team_id, label=f"Team {owner['team']}", type="team", risk=10, orbit="Ownership Memory"))
-            
+                nodes.append(TwinNode(id=team_id, label=owner['team'], type="team", risk=10, orbit="Contributor Memory"))
             if not any(n.id == service_id for n in nodes):
-                nodes.append(TwinNode(id=service_id, label=service_id, type="service", risk=20, orbit="GitLab Orbit"))
+                nodes.append(TwinNode(id=service_id, label=owner['owns'], type="service", risk=20, orbit="Label Memory"))
                 
             edges.append(TwinEdge(id=f"edge-{team_id}-{service_id}", source=team_id, target=service_id, relationship="OWNS", weight=0.9))
-            
-            # Connect MR to primary service (assume first owned service is primary)
-            if len(services_owned) == 0:
-                edges.append(TwinEdge(id=f"edge-{mr_id}-{service_id}", source=mr_id, target=service_id, relationship="UPDATES", weight=1.0))
-            
-            services_owned[service_id] = team_id
+            services_owned[owner['owns']] = service_id
 
-        # Add Incidents
+        # Connect MR to ALL services (to show wide blast radius)
+        for svc_id in services_owned.values():
+            edges.append(TwinEdge(id=f"edge-{mr_id}-{svc_id}", source=mr_id, target=svc_id, relationship="AFFECTS", weight=0.8))
+
+        # 2. Incidents
         for incident in orbit.incidents:
             inc_id = f"incident-{incident['id'].lower()}"
-            nodes.append(TwinNode(id=inc_id, label=incident["title"], type="incident", risk=90, orbit="Incident Memory"))
-            if incident["related_service"] in services_owned:
-                edges.append(TwinEdge(id=f"edge-{inc_id}-{incident['related_service']}", source=inc_id, target=incident["related_service"], relationship="AFFECTS", weight=0.8))
+            nodes.append(TwinNode(id=inc_id, label=incident["title"], type="incident", risk=90, orbit="Issue Memory"))
+            svc_key = incident.get("related_service", list(services_owned.keys())[0] if services_owned else "default")
+            svc_id = services_owned.get(svc_key, list(services_owned.values())[0] if services_owned else mr_id)
+            edges.append(TwinEdge(id=f"edge-{inc_id}-{svc_id}", source=inc_id, target=svc_id, relationship="AFFECTED", weight=0.9))
 
-        # Add Vulnerabilities
+        # 3. Vulnerabilities
         for vuln in orbit.vulnerabilities:
             vuln_id = f"vuln-{vuln['id'].lower()}"
             nodes.append(TwinNode(id=vuln_id, label=vuln["title"], type="vulnerability", risk=85, orbit="Dependency Memory"))
-            if vuln["service"] in services_owned:
-                edges.append(TwinEdge(id=f"edge-{vuln_id}-{vuln['service']}", source=vuln_id, target=vuln["service"], relationship="EXPOSES", weight=0.7))
+            svc_key = vuln.get("service", list(services_owned.keys())[0] if services_owned else "default")
+            svc_id = services_owned.get(svc_key, list(services_owned.values())[0] if services_owned else mr_id)
+            edges.append(TwinEdge(id=f"edge-{vuln_id}-{svc_id}", source=vuln_id, target=svc_id, relationship="EXPOSES", weight=0.7))
 
-        # Add Objectives
+        # 4. Objectives
         for obj in orbit.objectives:
             obj_id = f"obj-{obj['id'].lower()}"
-            nodes.append(TwinNode(id=obj_id, label=obj["title"], type="objective", risk=30, orbit="Objective Memory"))
-            # Connect primary service to objective
+            nodes.append(TwinNode(id=obj_id, label=obj["title"], type="objective", risk=30, orbit="Milestone Memory"))
             if services_owned:
-                primary_service = list(services_owned.keys())[0]
-                edges.append(TwinEdge(id=f"edge-{primary_service}-{obj_id}", source=primary_service, target=obj_id, relationship="DRIVES", weight=0.6))
+                for svc_id in services_owned.values():
+                    edges.append(TwinEdge(id=f"edge-{svc_id}-{obj_id}", source=svc_id, target=obj_id, relationship="DRIVES", weight=0.6))
+                    
+        # 5. Work Items (from issues)
+        for wi in orbit.work_items:
+            wi_id = f"wi-{wi['id'].lower()}"
+            # map work_items to objective type since twin doesn't have a specific "work_item" node visual type but it fits.
+            # wait, TwinNode type Literal["merge_request", "service", "objective", "team", "vulnerability", "incident"]
+            nodes.append(TwinNode(id=wi_id, label=wi["title"], type="objective", risk=40, orbit="Issue Memory"))
+            # connect them to the MR directly
+            edges.append(TwinEdge(id=f"edge-{mr_id}-{wi_id}", source=mr_id, target=wi_id, relationship="BLOCKED_BY", weight=0.4))
 
         # Build propagation path based on edges connected to the MR
         propagation_path = set()
@@ -75,5 +83,5 @@ class FutureTwinGenerator:
             nodes=nodes,
             edges=edges,
             propagation_path=list(propagation_path),
-            blast_radius_score=len(propagation_path) * 15
+            blast_radius_score=min(100, len(propagation_path) * 15)
         )

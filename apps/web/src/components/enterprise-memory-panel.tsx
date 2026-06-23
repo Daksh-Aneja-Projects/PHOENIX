@@ -7,11 +7,11 @@ import type { OrbitExplainability } from "@/lib/types";
 export function EnterpriseMemoryPanel({ explain, active }: { explain?: OrbitExplainability, active: boolean }) {
   if (!active || !explain) {
     return (
-      <div className="rounded-lg border border-white/5 bg-black/20 p-4 flex items-center gap-3 opacity-50">
-        <BrainCircuit className="h-5 w-5 text-slate-500 animate-pulse" />
+      <div className="rounded-lg border border-white/10 bg-black/40 p-4 flex items-center gap-3">
+        <BrainCircuit className="h-5 w-5 text-slate-400 animate-pulse" />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Enterprise Memory</p>
-          <p className="text-[10px] text-slate-500 font-mono">Awaiting ingestion...</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-200">Enterprise Memory</p>
+          <p className="text-[10px] text-slate-400 font-mono">Awaiting ingestion...</p>
         </div>
       </div>
     );

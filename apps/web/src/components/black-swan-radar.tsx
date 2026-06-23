@@ -15,11 +15,11 @@ export function BlackSwanRadar({
 }) {
   if (!active || !simulation) {
     return (
-      <div className="rounded-lg border border-white/5 bg-black/20 p-4 flex items-center gap-3 opacity-50">
-        <Activity className="h-5 w-5 text-slate-500 animate-pulse" />
+      <div className="rounded-lg border border-white/10 bg-black/40 p-4 flex items-center gap-3">
+        <Activity className="h-5 w-5 text-slate-400 animate-pulse" />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Black Swan Surface</p>
-          <p className="text-[10px] text-slate-500 font-mono">Awaiting simulation triggers...</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-200">Black Swan Surface</p>
+          <p className="text-[10px] text-slate-400 font-mono">Awaiting simulation triggers...</p>
         </div>
       </div>
     );
@@ -49,30 +49,30 @@ export function BlackSwanRadar({
       )}
 
       <div className="relative z-10 flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center gap-2">
           <AlertTriangle className={`h-6 w-6 ${isMitigated ? "text-emerald-400" : "text-rose-400 animate-pulse"}`} />
           <h2 className="text-sm font-bold uppercase tracking-widest text-white">Black Swan Discovered</h2>
-        </div>
-        <div className={`text-2xl font-black ${isMitigated ? "text-emerald-400" : "text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]"}`}>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.0, type: "spring" }} className={`text-2xl font-black ${isMitigated ? "text-emerald-400" : "text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]"}`}>
           {(black_swan.probability * 100).toFixed(1)}%
-        </div>
+        </motion.div>
       </div>
 
-      <div className="relative z-10 mb-6">
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 2.0 }} className="relative z-10 mb-6">
         <p className="text-lg font-semibold text-white leading-tight">{black_swan.title}</p>
         <p className={`text-xs mt-2 font-mono uppercase tracking-widest ${isMitigated ? "text-emerald-300/80" : "text-rose-300/80"}`}>
           Impact: {black_swan.impact}
         </p>
-      </div>
+      </motion.div>
 
       <div className="relative z-10 space-y-3">
-        <p className="text-[10px] text-white/50 uppercase tracking-widest mb-2 border-b border-white/10 pb-1">Causal Chain</p>
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.0 }} className="text-[10px] text-white/50 uppercase tracking-widest mb-2 border-b border-white/10 pb-1">Causal Chain</motion.p>
         {black_swan.causal_chain.map((step, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.2 + 0.5 }}
+            transition={{ delay: index * 0.4 + 3.5 }}
             className={`relative rounded border bg-black/40 p-3 text-xs ${
               isMitigated ? "border-emerald-500/20 text-emerald-100" : "border-rose-500/30 text-rose-100"
             }`}

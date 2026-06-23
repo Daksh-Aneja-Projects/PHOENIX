@@ -81,3 +81,19 @@ body {
     radial-gradient(circle, transparent 0 22%, rgba(148, 163, 184, 0.18) 22.5% 23%, transparent 23.5% 45%, rgba(148, 163, 184, 0.16) 45.5% 46%, transparent 46.5% 68%, rgba(148, 163, 184, 0.14) 68.5% 69%, transparent 69.5%),
     conic-gradient(from 0deg, rgba(34, 211, 238, 0.3), rgba(251, 113, 133, 0.24), rgba(52, 211, 153, 0.24), rgba(34, 211, 238, 0.3));
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.3);
+}

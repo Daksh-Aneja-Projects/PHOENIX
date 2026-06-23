@@ -1,89 +1,129 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock3, GitMerge, AlertCircle, ShieldCheck, Divide } from "lucide-react";
+import { Clock3, GitMerge, ShieldCheck, Zap } from "lucide-react";
 import type { SimulationResult } from "@/lib/types";
 
 export function FutureTimeline({ simulation, active, mitigated }: { simulation?: SimulationResult; active: boolean; mitigated: boolean }) {
   if (!simulation) {
     return (
-      <div className="h-full flex flex-col justify-center items-center opacity-30">
-        <Clock3 className="h-8 w-8 text-cyan-500 mb-4 animate-pulse" />
-        <p className="font-mono text-sm uppercase tracking-widest text-cyan-200">Awaiting Simulation</p>
+      <div className="h-full flex flex-col justify-center items-center opacity-70">
+        <Clock3 className="h-8 w-8 text-cyan-400 mb-4 animate-pulse" />
+        <p className="font-mono text-sm uppercase tracking-widest text-cyan-100">Awaiting Simulation</p>
       </div>
     );
   }
 
-  const icons = [GitMerge, AlertCircle, ShieldCheck, Divide];
+  const days = [0, 1, 7, 30];
+  const xCoords = [20, 200, 450, 750]; // mapping days to X pixels
+  const strategies = simulation.strategies;
+  
+  // Distribute Y coordinates for branches
+  const yCenter = 120;
+  const ySpread = 160; 
+  const getY = (index: number, max: number) => {
+    if (max === 1) return yCenter;
+    return yCenter - ySpread/2 + (ySpread / (max - 1)) * index;
+  };
 
   return (
-    <div className="h-full flex flex-col p-6">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="h-full flex flex-col p-6 relative">
+      <div className="flex items-center gap-2 mb-2 absolute top-4 left-6 z-20">
         <Clock3 className="h-4 w-4 text-cyan-400" />
-        <h2 className="font-semibold text-sm uppercase tracking-wider text-cyan-50">Future Divergence Timeline</h2>
-        <span className="ml-4 text-[10px] font-mono text-cyan-300/50 uppercase tracking-widest">300 Futures Simulated</span>
+        <h2 className="font-semibold text-sm uppercase tracking-wider text-cyan-50">Future Divergence Tree</h2>
       </div>
 
-      <div className="flex-1 flex flex-col gap-2 relative">
-        {/* Timeline Axis */}
-        <div className="absolute top-0 bottom-0 left-[200px] right-0 flex justify-between px-4 pointer-events-none">
-          {[0, 1, 7, 30].map((day, idx) => (
-            <div key={day} className="h-full flex flex-col items-center">
-              <div className="w-px flex-1 bg-white/5 border-l border-dashed border-white/10" />
-              <div className="mt-2 text-[9px] font-mono text-slate-500 uppercase">Day {day === 0 ? "Now" : `+${day}`}</div>
-            </div>
-          ))}
-        </div>
+      <div className="flex-1 relative w-full h-full mt-6">
+        {/* Axis Labels */}
+        {days.map((day, idx) => (
+          <div key={day} className="absolute bottom-0 text-[10px] font-mono text-slate-500 uppercase -translate-x-1/2" style={{ left: `${xCoords[idx]}px` }}>
+            Day {day === 0 ? "Now" : `+${day}`}
+          </div>
+        ))}
 
-        {/* Strategies Divergence */}
-        {simulation.strategies.map((strategy, index) => {
-          const Icon = icons[index % icons.length];
+        {/* SVG Drawing Canvas */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 850 240" preserveAspectRatio="xMinYMid slice">
+          {active && strategies.map((strategy, sIdx) => {
+            const startY = yCenter;
+            const endY = getY(sIdx, strategies.length);
+            const isMergeNow = strategy.id === "merge_now";
+            const isHot = isMergeNow && !mitigated;
+            const color = isHot ? "#fb7185" : "#22d3ee"; // rose-400 or cyan-400
+            const strokeOpacity = isHot ? 0.8 : 0.3;
+
+            // Generate bezier curve path
+            const pathData = `M ${xCoords[0]} ${startY} C ${xCoords[1]} ${startY}, ${xCoords[1]} ${endY}, ${xCoords[2]} ${endY} L ${xCoords[3]} ${endY}`;
+
+            return (
+              <g key={strategy.id}>
+                {/* Branch Path */}
+                <motion.path
+                  d={pathData}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={isHot ? 3 : 1.5}
+                  strokeOpacity={strokeOpacity}
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1.5, delay: sIdx * 0.2 }}
+                  style={{ filter: isHot ? "drop-shadow(0 0 8px rgba(244,63,94,0.8))" : "none" }}
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Nodes overlay (HTML for tooltips and hover effects) */}
+        {active && strategies.map((strategy, sIdx) => {
+          const endY = getY(sIdx, strategies.length);
           const isMergeNow = strategy.id === "merge_now";
-          const highlight = isMergeNow && !mitigated ? "text-rose-400 border-rose-500/30 bg-rose-500/10" : "text-cyan-300 border-cyan-500/20 bg-cyan-500/5";
+          const isHot = isMergeNow && !mitigated;
           
           return (
-            <motion.div
-              key={strategy.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: active ? 1 : 0.3, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`flex-1 flex items-center rounded-lg border backdrop-blur-sm relative z-10 ${highlight} overflow-hidden`}
-            >
-              {/* Strategy Header */}
-              <div className="w-[200px] px-4 py-2 border-r border-white/10 flex flex-col justify-center bg-black/40 h-full">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className="h-3 w-3" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">{strategy.name}</span>
+            <div key={`nodes-${strategy.id}`} className="absolute inset-0 pointer-events-none">
+              {/* Endpoint Strategy Label */}
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.5 + sIdx * 0.2 }}
+                className="absolute text-xs whitespace-nowrap -translate-y-1/2 pointer-events-auto cursor-help"
+                style={{ left: `${xCoords[3] + 15}px`, top: `${endY}px` }}
+              >
+                <div className={`font-semibold uppercase tracking-wider ${isHot ? "text-rose-400" : "text-cyan-300"}`}>
+                  {strategy.name}
                 </div>
-                <div className="text-[10px] font-mono opacity-60">Risk: {strategy.risk_score} / Conf: {(strategy.confidence * 100).toFixed(0)}%</div>
-              </div>
+                <div className="text-[9px] font-mono text-slate-500">
+                  Risk: {strategy.risk_score} | Conf: {(strategy.confidence*100).toFixed(0)}%
+                </div>
+              </motion.div>
 
-              {/* Timeline Track */}
-              <div className="flex-1 flex justify-between items-center px-4 h-full relative">
-                {/* Connecting Line */}
-                <div className="absolute left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent top-1/2 -translate-y-1/2" />
+              {/* Day Nodes */}
+              {strategy.timeline.map((point, pIdx) => {
+                const px = xCoords[pIdx];
+                const py = pIdx < 2 ? yCenter + (endY - yCenter) * (pIdx/2) : endY; // Approximate position on curve
+                const pointRiskHigh = point.risk >= 70;
+                const pColor = pointRiskHigh && (!mitigated || isMergeNow) ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]" : "bg-cyan-500";
 
-                {strategy.timeline.map((point, pIndex) => {
-                  const isHighRisk = point.risk >= 70;
-                  const nodeColor = isHighRisk && (!mitigated || isMergeNow) ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]" : "bg-cyan-500";
-                  
-                  return (
-                    <div key={point.day} className="relative z-10 flex flex-col items-center group cursor-crosshair">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: active ? 1 : 0 }}
-                        transition={{ delay: (index * 0.1) + (pIndex * 0.2) }}
-                        className={`h-2 w-2 rounded-full ${nodeColor} group-hover:scale-150 transition-transform`}
-                      />
-                      <div className="absolute top-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 border border-white/20 p-2 rounded text-[10px] w-32 -translate-x-1/2 left-1/2 pointer-events-none shadow-2xl">
-                        <div className="text-white font-semibold mb-1">Risk Level: {point.risk}</div>
-                        <div className="text-muted-foreground leading-tight">{point.label}</div>
-                      </div>
+                return (
+                  <motion.div
+                    key={`${strategy.id}-${point.day}`}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: pIdx * 0.4 + sIdx * 0.1 }}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto group"
+                    style={{ left: `${px}px`, top: `${py}px` }}
+                  >
+                    <div className={`h-2.5 w-2.5 rounded-full ${pColor} group-hover:scale-150 transition-transform cursor-crosshair`} />
+                    
+                    {/* Tooltip */}
+                    <div className="absolute top-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 border border-white/20 p-2 rounded text-[10px] w-40 -translate-x-1/2 left-1/2 z-50 pointer-events-none shadow-2xl">
+                      <div className="text-white font-semibold mb-1">Risk: {point.risk}</div>
+                      <div className="text-muted-foreground leading-tight">{point.label}</div>
                     </div>
-                  );
-                })}
-              </div>
-            </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
           );
         })}
       </div>

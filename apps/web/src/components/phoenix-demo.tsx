@@ -52,10 +52,16 @@ export function PhoenixDemo() {
       return;
     }
 
+    // Video Mode Pacing
+    // 0-15s: Orbit (Ingest) -> phase 1
+    // 15-35s: Twin -> phase 2 (propagation)
+    // 35-60s: Simulation -> phase 3 (diverging paths)
+    // 60-90s: Black Swan -> phase 4
+    // 90-120s: Mitigation -> phase 5
     const timers = [
-      window.setTimeout(() => ingestOrbit(), 4000),
-      window.setTimeout(() => simulateFutures(), 18000),
-      window.setTimeout(() => executeAgents(), 82000)
+      window.setTimeout(() => ingestOrbit(), 5000),      // Starts taking effect over next 10s
+      window.setTimeout(() => simulateFutures(), 35000), // Kicks off simulation
+      window.setTimeout(() => executeAgents(), 90000)    // Mitigates Black Swan
     ];
 
     return () => timers.forEach(window.clearTimeout);
@@ -161,15 +167,15 @@ export function PhoenixDemo() {
           
           {/* Top Control Bar overlaying Twin */}
           <div className="absolute top-4 left-4 z-10 flex gap-2">
-            <Button onClick={ingestOrbit} disabled={!scenario.data || phase > 0} className="bg-black/50 backdrop-blur-md border border-cyan-500/30 hover:bg-cyan-900/30">
+            <Button onClick={ingestOrbit} disabled={!scenario.data || phase > 0} className="bg-black/60 text-cyan-100 backdrop-blur-md border border-cyan-500/30 hover:bg-cyan-900/30">
               <Activity className="h-4 w-4 mr-2" />
               Ingest Context
             </Button>
-            <Button onClick={simulateFutures} disabled={phase < 2 || simulation.isPending} variant="secondary" className="bg-black/50 backdrop-blur-md border border-amber-500/30 hover:bg-amber-900/30">
+            <Button onClick={simulateFutures} disabled={phase < 2 || simulation.isPending} variant="secondary" className="bg-black/60 text-amber-100 backdrop-blur-md border border-amber-500/30 hover:bg-amber-900/30">
               <Radar className="h-4 w-4 mr-2 text-amber-400" />
               Simulate
             </Button>
-            <Button onClick={executeAgents} disabled={!simulation.data || agents.isPending || phase >= 5} variant="danger" className="bg-black/50 backdrop-blur-md border border-rose-500/30 hover:bg-rose-900/30">
+            <Button onClick={executeAgents} disabled={!simulation.data || agents.isPending || phase >= 5} variant="danger" className="bg-black/60 text-rose-100 backdrop-blur-md border border-rose-500/30 hover:bg-rose-900/30">
               <Zap className="h-4 w-4 mr-2 text-rose-400" />
               Mitigate
             </Button>

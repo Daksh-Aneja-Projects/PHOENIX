@@ -42,75 +42,82 @@ class GitLabToOrbitAdapter:
                 orbit_source="GitLab Orbit"
             )
             
-        # 2. OrbitContext pipelines
+        # Real Teams / Contributors
+        top_contributors = sorted(contributors, key=lambda x: x.get("commits", 0), reverse=True)[:5]
+        teams = [c.get("name", "Unknown User") for c in top_contributors] if top_contributors else ["Maintainers"]
+        
+        # Real Services / Labels
+        service_labels = [l.get("name") for l in labels if "service" in l.get("name", "").lower() or "api" in l.get("name", "").lower()]
+        if not service_labels:
+            service_labels = [l.get("name") for l in labels[:3]] if labels else ["core-platform", "frontend-app"]
+            
+        ownership = []
+        for i, team in enumerate(teams):
+            svc = service_labels[i % len(service_labels)]
+            ownership.append({"team": team, "owns": svc})
+
+        # OrbitContext pipelines
         pipelines = []
-        for p in pipelines_data[:3]:
+        for p in pipelines_data[:5]:
             status = p.get("status", "unknown")
             pipelines.append({
                 "name": f"pipeline-{p.get('id', 'unknown')}",
                 "status": "passing" if status == "success" else status,
                 "coverage": random.randint(70, 95)
             })
-        if not pipelines:
-            pipelines = [
-                {"name": "unit-tests", "status": "passing", "coverage": 91},
-                {"name": "integration-tests", "status": "passing", "coverage": 84}
-            ]
             
-        # 3. Incidents & Work items
+        # Incidents & Work items
         incidents = []
         work_items = []
-        for i, issue in enumerate(issues[:4]):
+        for issue in issues[:8]:
             title = issue.get("title", "Issue")
-            labels = issue.get("labels", [])
-            if "incident" in labels or "bug" in labels or i == 0:
+            issue_labels = issue.get("labels", [])
+            svc = issue_labels[0] if issue_labels else service_labels[0]
+            
+            if "incident" in issue_labels or "bug" in issue_labels or "critical" in issue_labels:
                 incidents.append({
-                    "id": f"INC-{issue.get('iid', i)}",
-                    "title": title,
+                    "id": f"INC-{issue.get('iid', issue.get('id'))}",
+                    "title": title[:40],
                     "severity": "sev2",
-                    "related_service": "identity-service",
-                    "date": issue.get("created_at", "May 14")[:10]
+                    "related_service": svc,
+                    "date": issue.get("created_at", "Unknown")[:10]
                 })
             else:
                 work_items.append({
-                    "id": f"WI-{issue.get('iid', i)}",
-                    "title": title,
+                    "id": f"WI-{issue.get('iid', issue.get('id'))}",
+                    "title": title[:40],
                     "status": "at-risk",
-                    "objective": "Expand enterprise adoption"
+                    "objective": "Current Milestone"
                 })
                 
-        if not incidents:
-            incidents = [{"id": "INC-2026-0514", "title": "Session invalidation outage", "severity": "sev2", "related_service": "identity-service", "date": "May 14"}]
-        if not work_items:
-            work_items = [{"id": "WI-991", "title": "Enterprise SSO Launch", "status": "at-risk", "objective": "Expand enterprise adoption"}]
-            
-        # 4. Vulnerabilities
+        # Vulnerabilities (from Real Vulns or Security Issues)
         vulnerabilities = []
-        for v in vulns[:2]:
+        for v in vulns[:4]:
             vulnerabilities.append({
                 "id": f"VULN-{v.get('id', '1')}",
-                "title": v.get("name", "Vulnerability"),
+                "title": v.get("name", "Vulnerability")[:40],
                 "severity": v.get("severity", "high"),
-                "service": "identity-service"
+                "service": service_labels[0]
             })
-        if not vulnerabilities:
-            vulnerabilities = [{"id": "VULN-JWT-19", "title": "JWT library stale version", "severity": "high", "service": "identity-service"}]
 
+        # Objectives (from Milestones)
+        objectives = []
+        for m in milestones[:3]:
+            objectives.append({
+                "id": f"OBJ-{m.get('id')}",
+                "title": m.get("title", "Milestone"),
+                "health": "green",
+                "risk_after_mr": "amber"
+            })
+            
         context = OrbitContext(
-            teams=["Identity", "Mobile", "Payments", "Security"],
-            ownership=[
-              {"team": "Identity", "owns": "identity-service"},
-              {"team": "Mobile", "owns": "mobile-api"},
-              {"team": "Payments", "owns": "checkout-api"},
-              {"team": "Security", "owns": "security-platform"}
-            ],
+            teams=teams,
+            ownership=ownership,
             pipelines=pipelines,
             vulnerabilities=vulnerabilities,
             incidents=incidents,
             work_items=work_items,
-            objectives=[
-                {"id": "OBJ-Q3-ENT", "title": "Enterprise SSO Launch", "health": "green", "risk_after_mr": "amber"}
-            ],
+            objectives=objectives,
             repository_intelligence=intel
         )
         
